@@ -27,7 +27,7 @@ public class BluetoothManagerService extends Service{
 	//Packet Reciever object
 	PacketReceiver packet_receiver;
 	
-	static final String PACKET_RECEIVE_INTENT = "com.android.BluetoothManager.PACKET_RECEIVED";
+	static final String PACKET_RECEIVE_INTENT_ACTION = "com.android.BluetoothManager.PACKET_RECEIVED";
 
 	private final String TAG="com.android.BluetoothManager.Service";
 	
@@ -40,7 +40,6 @@ public class BluetoothManagerService extends Service{
 	
 	@Override
 	public IBinder onBind(Intent intent) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -62,7 +61,7 @@ public class BluetoothManagerService extends Service{
 		packet_receiver= new PacketReceiver();
 		
 		//register the PacketReciever to listen
-		registerReceiver(packet_receiver, new IntentFilter(PACKET_RECEIVE_INTENT));
+		registerReceiver(packet_receiver, new IntentFilter(PACKET_RECEIVE_INTENT_ACTION));
 		
 		bluetooth_manager.bluetooth_manager_service = this;
 		
@@ -96,7 +95,7 @@ public class BluetoothManagerService extends Service{
 		@Override
 		public void OnMessageReceived(String device, String message) {
 			Log.d(TAG, "Message Received:" + message + " from:" + device);
-			Intent intent = new Intent(PACKET_RECEIVE_INTENT);
+			Intent intent = new Intent(PACKET_RECEIVE_INTENT_ACTION);
 			intent.putExtra("device", device);
 			intent.putExtra("msg", message);
 			
@@ -139,7 +138,6 @@ public class BluetoothManagerService extends Service{
 
 	@Override
 	public void onDestroy() {
-		// TODO Auto-generated method stub
 		super.onDestroy();
 		connection.shutdown();
 		connection=null;
