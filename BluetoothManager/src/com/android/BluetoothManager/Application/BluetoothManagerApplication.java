@@ -26,8 +26,6 @@ public class BluetoothManagerApplication extends Application {
 		super.onTerminate();
 		stopService(new Intent(this,BluetoothManagerService.class));
 	}
-	
-	
-	
+//Testing git diff	
 
 }
