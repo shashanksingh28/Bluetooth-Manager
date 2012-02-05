@@ -40,6 +40,6 @@ public class UI extends TabActivity {
 				.setContent(intent);
 		tabHost.addTab(spec);
 
-		tabHost.setCurrentTab(1); // changed focues tab
+		tabHost.setCurrentTab(0);
 	}
 }
