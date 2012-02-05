@@ -1,3 +1,5 @@
+package com.android.BluetoothManager.Application;
+
 import android.app.Application;
 import android.content.Intent;
 
@@ -7,6 +9,10 @@ import android.content.Intent;
  */
 public class BluetoothManagerApplication extends Application {
 
+	
+	BluetoothManagerService bluetooth_manager_service;
+	
+	
 	@Override
 	public void onCreate() {
 		super.onCreate();

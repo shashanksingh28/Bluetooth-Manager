@@ -1,3 +1,4 @@
+package com.android.BluetoothManager.Application;
 import android.app.Service;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -21,7 +22,7 @@ public class BluetoothManagerService extends Service{
 	//Maximum number of bluetooth connections allowed
 	private static final int MAX_CONNECTIONS = 7;
 	
-	
+	BluetoothManagerApplication bluetooth_manager;
 
 	//Packet Reciever object
 	PacketReceiver packet_receiver;
@@ -32,6 +33,9 @@ public class BluetoothManagerService extends Service{
 	
 	//Connection object which initiates the radio level
 	Connection connection;
+	
+	public static String selfAddress;
+	
 	
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -45,18 +49,34 @@ public class BluetoothManagerService extends Service{
 		super.onCreate();
 		//Initialization of connection
 		connection = new Connection(this,serviceReadyListener);
+		
+		selfAddress = connection.getAddress();
+		
+		bluetooth_manager = (BluetoothManagerApplication)getApplication();
+		
 		// Instantiate the PacketReciever
 		packet_receiver= new PacketReceiver();
 		
 		//register the PacketReciever to listen
 		registerReceiver(packet_receiver, new IntentFilter(PACKET_RECEIVE_INTENT));
+		
+		bluetooth_manager.bluetooth_manager_service = this;
+		
 	}
+	
 	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {		
 		//start Server
 		startServer();
 		return 0;
+	}
+	
+	/*
+	 * Get self device MAC address
+	 */
+	public String getAddress(){
+		return connection.getAddress();
 	}
 	
 	/* Listeners to be Called back by framework on events

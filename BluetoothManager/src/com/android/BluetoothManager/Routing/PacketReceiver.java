@@ -1,5 +1,7 @@
 package com.android.BluetoothManager.Routing;
 
+import java.util.ArrayList;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -16,6 +18,15 @@ public class PacketReceiver extends BroadcastReceiver {
 	public static final int RERR = 3;
 	public static final int DATA = 4;
 
+	// Route
+	
+	
+	public PacketReceiver() {
+		RouteTable.table = new ArrayList<Route>();
+	}
+	
+	
+	
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		// TODO Auto-generated method stub
