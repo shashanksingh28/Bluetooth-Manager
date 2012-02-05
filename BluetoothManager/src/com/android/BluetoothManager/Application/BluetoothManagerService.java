@@ -34,6 +34,7 @@ public class BluetoothManagerService extends Service{
 	//Connection object which initiates the radio level
 	Connection connection;
 	
+	//My bluetooth Address
 	public static String selfAddress;
 	
 	
@@ -43,6 +44,9 @@ public class BluetoothManagerService extends Service{
 		return null;
 	}
 
+	
+	
+	
 	@Override
 	public void onCreate() {
 		
