@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="hello">Hello World, UI!</string>
+    <string name="app_name">BluetoothManager</string>
+    <string name="DISCOVERABLE_MODE_NOT_ENABLED">Discoverable Mode Not Enabled</string>
+    <string name="WARNING_MESSAGE">Warning: Discoverable mode has not been enabled.\n\nDevices which have not connected to your device before will not even know that it exists.\n\nWould you like to enable discoverable mode?</string>
+
+</resources>
