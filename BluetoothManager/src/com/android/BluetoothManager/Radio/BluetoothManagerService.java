@@ -24,11 +24,8 @@ public class BluetoothManagerService extends Service{
 	
 	BluetoothManagerApplication bluetooth_manager;
 
-	//Packet Reciever object
-	PacketReceiver packet_receiver;
 	
-	static final String PACKET_RECEIVE_INTENT_ACTION = "com.android.BluetoothManager.PACKET_RECEIVED";
-
+	
 	private final String TAG="com.android.BluetoothManager.Service";
 	
 	//Connection object which initiates the radio level
@@ -57,11 +54,6 @@ public class BluetoothManagerService extends Service{
 		
 		bluetooth_manager = (BluetoothManagerApplication)getApplication();
 		
-		// Instantiate the PacketReciever
-		packet_receiver= new PacketReceiver();
-		
-		//register the PacketReciever to listen
-		registerReceiver(packet_receiver, new IntentFilter(PACKET_RECEIVE_INTENT_ACTION));
 		
 		bluetooth_manager.bluetooth_manager_service = this;
 		
@@ -95,7 +87,7 @@ public class BluetoothManagerService extends Service{
 		@Override
 		public void OnMessageReceived(String device, String message) {
 			Log.d(TAG, "Message Received:" + message + " from:" + device);
-			Intent intent = new Intent(PACKET_RECEIVE_INTENT_ACTION);
+			Intent intent = new Intent(BluetoothManagerApplication.PACKET_RECEIVE_INTENT_ACTION);
 			intent.putExtra("device", device);
 			intent.putExtra("msg", message);
 			
