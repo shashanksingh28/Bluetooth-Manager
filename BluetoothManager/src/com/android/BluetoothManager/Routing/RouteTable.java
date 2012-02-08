@@ -5,7 +5,7 @@ import java.util.Date;
 import java.util.Iterator;
 
 import com.android.BluetoothManager.Radio.BluetoothManagerService;
-import com.android.BluetoothManager.Routing.Packet_types.RREQ_packet;
+import com.android.BluetoothManager.Routing.Packet_types.*;
 
 public class RouteTable {
 
@@ -38,9 +38,14 @@ public class RouteTable {
 		else
 		{
 			Route present;
-			if((present=routePresent(rreq))!=null)
+			if((present=routePresent(rreq.getDest_addr()))!=null)
 			{
-				//route already present, send RREP
+				//route already present,
+				//if Next_hop is not '?' send RREP
+				if(!(present.getHop_addr().equals("?")))
+				{
+					//send RREP
+				}
 			}
 			else
 			{
@@ -57,6 +62,32 @@ public class RouteTable {
 		return 0;
 	}
 	
+	public static int checkRREP(RREP_packet rrep)
+	{
+		if(isDestination(rrep.getDest_addr()))
+		{
+			//self is destination, send RREP
+		}
+		else
+		{
+			Route present;
+			if((present=routePresent(rrep.getSrc_addr()))!=null)
+			{
+				if(present.getHop_addr().equals("?"))
+				{
+					present.setHop_addr(rrep.getFrom_addr());
+					RREP_packet new_rrep= new RREP_packet(rrep.getSeq_number(), rrep.getSrc_addr(),
+							rrep.getDest_addr(), BluetoothManagerService.selfAddress, rrep.getHop_count());
+					
+					//Unicast new_rrep to from_addr in table 
+				}
+			}
+			
+		}
+		return 0;
+	}
+
+	
 	//add new route entry
 	public static void addRoute(RREQ_packet rreq)
 	{
@@ -67,7 +98,7 @@ public class RouteTable {
 	}
 	
 	//check if route exists for RREQ on table and return null if no and route Entry if yes
-	static Route routePresent(RREQ_packet rreq)
+	static Route routePresent(String dest_addr)
 	{
 
 		Iterator<Route> itr=table.iterator();
@@ -75,7 +106,7 @@ public class RouteTable {
 		for(;itr.hasNext();)
 		{
 			temp=(Route)itr.next();
-			if(temp.getDest_addr().equals(rreq.getDest_addr()))
+			if(temp.getDest_addr().equals(dest_addr))
 			{
 				return temp;
 			}
@@ -100,25 +131,25 @@ public class RouteTable {
  */
 class Route {
 
-	private Date seq_number;
+	private long seq_number;
 	private String src_addr;
 	private String dest_addr;
 	private String hop_addr;
 	private int numberOfHops;
 	
-	public Route(Date seq_number,String src_addr, String dest_addr,
+	public Route(long l,String src_addr, String dest_addr,
 			String hop_addr, int numberOfHops) {
 		super();
-		this.seq_number = seq_number;
+		this.seq_number = l;
 		this.src_addr = src_addr;
 		this.dest_addr = dest_addr;
 		this.hop_addr = hop_addr;
 		this.numberOfHops = numberOfHops;
 	}
-	public Date getSeq_number() {
+	public long getSeq_number() {
 		return seq_number;
 	}
-	public void setSeq_number(Date seq_number) {
+	public void setSeq_number(long seq_number) {
 		this.seq_number = seq_number;
 	}
 	public String getSrc_addr() {

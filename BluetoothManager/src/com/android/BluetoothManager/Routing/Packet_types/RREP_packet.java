@@ -1,15 +1,14 @@
 package com.android.BluetoothManager.Routing.Packet_types;
 
-// Route Request Packet Structure
-public class RREQ_packet 
-{
+public class RREP_packet {
+	
 	long seq_number;
 	String src_addr;
 	String dest_addr;
 	String from_addr;
 	int hop_count;
 	
-	public RREQ_packet(long seq_number, String src_addr, String dest_addr,
+	public RREP_packet(long seq_number, String src_addr, String dest_addr,
 			String from_addr, int hop_count) {
 		super();
 		this.seq_number = seq_number;
@@ -59,4 +58,6 @@ public class RREQ_packet
 		this.hop_count = hop_count;
 	}
 	
+	
+
 }
