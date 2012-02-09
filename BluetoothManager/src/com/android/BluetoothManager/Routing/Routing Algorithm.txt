@@ -1,0 +1,61 @@
+References:
+http://www.daimi.au.dk/~rolft/docs/thesis.pdf
+
+The routing algorithm used for this application is a customized adaptation of the DYMO protocol
+DYMO : Dynamic MANET On Demand Routing Protocol
+
+According to the protocol, in order to discover a route, an RREQ packet will be sent by the node which wants
+to initiate the communication (source_addr) for a particular destination (dest_addr).
+The RREQ packet will be broadcasted on the network, with each node changing the "from_addr" field of the 
+packet to its own.
+
+The RREQ packet structure is:
+
+Packet Type, Source Address, Destination Address, From Address, Number of Hops  
+
+Whereas the RREP packet structure is the same but for a different functionality:
+
+Packet Type, Source Address, Destination Address, From Address, Number of Hops 
+
+
+Each node will have to maintain a routing table for route discovery and route maintenance. 
+The structure is as follows:
+
+Seq_number		:		Basically the TimeStamp of the system time of the mobile that generated the req
+Request			:		The address of the node which forwarded it the RREQ
+From
+Destination		:		The MAC of the destination you want to reach
+Address
+Next_Hope		:		The next hop address for routing the packet
+Address
+Number of Hops	:		Number of hops needed to reach that address
+
+
+ROUTE DISCOVERY:
+
+The sequence of steps for creating a route:
+1. Initiator broadcasts an RREQ packet with structure as above.
+2. Intermediate nodes I receives the RREQ
+	a. Checks if it itself is the destination. If yes, sends RREP.
+	b. Checks if it knows a route to the destination address. If yes, send RREP.
+	c. Checks if it has already has an incomplete entry of the destination. If yes, wait for RREP.
+	d. None above,adds an incomplete entry on its Route table and broadcasts the RREQ with its own address as "from"
+	and incrementing the number of hops.
+3. The destination makes a reverse entry on its table with number of hops, source as destination and sends
+   an RREP to the "from" field.
+4. The "from" receives the RREP, completes the route info in its tables, and send it to the "req_from" field
+   on the table until it reaches the destination, which is the source of the RREQ.
+   
+ROUTE MAINTAINENCE:
+
+Since this application is going to be used for Ad-Hoc Bluetooth devices, a node will keep sending and receiving
+"hello" messages from the nodes which are listed in its routing table. It will delete entries for which it does
+not get a reply within a certain time frame. The frequency of these "hello" messages has been arbritraly decided
+as 30 sec for now.
+
+
+The sequence of steps for maintaining a route:
+1. After every 30 sec, send a hello message to all in the list with timestamp and scan table
+2. For all Hello Message received, update the Table route entry with latest TimeStamp
+3. While Scanning table, remove all entries with timestamp diff more than a minute
+	

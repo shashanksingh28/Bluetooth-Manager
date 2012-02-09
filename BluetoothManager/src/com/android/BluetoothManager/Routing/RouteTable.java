@@ -50,10 +50,10 @@ public class RouteTable {
 			else
 			{
 				//add route to table
-				addRoute(rreq);
+				addRREQRoute(rreq);
 				//create new RREQ, increment hop and broadcast
-				RREQ_packet new_rreq= new RREQ_packet(rreq.getSeq_number(),rreq.getSrc_addr(),
-						rreq.getDest_addr(),BluetoothManagerService.selfAddress,rreq.getHop_count()+1);
+				RREQ_packet new_rreq= new RREQ_packet(rreq.getSeq_number(),BluetoothManagerService.selfAddress,
+						rreq.getDest_addr(),"?",rreq.getHop_count()+1);
 				//Broadcast new RREQ here
 				
 			}
@@ -66,7 +66,7 @@ public class RouteTable {
 	{
 		if(isDestination(rrep.getDest_addr()))
 		{
-			//self is destination, send RREP
+			//self is destination, route complete
 		}
 		else
 		{
@@ -75,9 +75,10 @@ public class RouteTable {
 			{
 				if(present.getHop_addr().equals("?"))
 				{
+					//Complete the entry, add Hop_addr to the one who sent the rrep and increment hop
 					present.setHop_addr(rrep.getFrom_addr());
 					RREP_packet new_rrep= new RREP_packet(rrep.getSeq_number(), rrep.getSrc_addr(),
-							rrep.getDest_addr(), BluetoothManagerService.selfAddress, rrep.getHop_count());
+							rrep.getDest_addr(), BluetoothManagerService.selfAddress, rrep.getHop_count()+1);
 					
 					//Unicast new_rrep to from_addr in table 
 				}
@@ -88,12 +89,12 @@ public class RouteTable {
 	}
 
 	
-	//add new route entry
-	public static void addRoute(RREQ_packet rreq)
+	//add new RREQ route entry
+	public static void addRREQRoute(RREQ_packet rreq)
 	{
-		//create a new route with Question mark as next_hop and incremented hop count
-		Route r= new Route(rreq.getSeq_number(),rreq.getSrc_addr(),rreq.getDest_addr(),
-				"?",rreq.getHop_count());
+		// ? Stands for not knowing next hop and -1 for not knowing sequence number
+		Route r= new Route(rreq.getSeq_number(),rreq.getFrom_addr(),rreq.getDest_addr(),
+				"?",-1);
 		table.add(r);
 	}
 	
@@ -132,16 +133,15 @@ public class RouteTable {
 class Route {
 
 	private long seq_number;
-	private String src_addr;
+	private String req_from;
 	private String dest_addr;
 	private String hop_addr;
 	private int numberOfHops;
 	
-	public Route(long l,String src_addr, String dest_addr,
+	public Route(long l, String dest_addr,String req_from,
 			String hop_addr, int numberOfHops) {
 		super();
 		this.seq_number = l;
-		this.src_addr = src_addr;
 		this.dest_addr = dest_addr;
 		this.hop_addr = hop_addr;
 		this.numberOfHops = numberOfHops;
@@ -151,12 +151,6 @@ class Route {
 	}
 	public void setSeq_number(long seq_number) {
 		this.seq_number = seq_number;
-	}
-	public String getSrc_addr() {
-		return src_addr;
-	}
-	public void setSrc_addr(String src_addr) {
-		this.src_addr = src_addr;
 	}
 	public String getDest_addr() {
 		return dest_addr;
@@ -175,6 +169,12 @@ class Route {
 	}
 	public void setNumberOfHops(int numberOfHops) {
 		this.numberOfHops = numberOfHops;
+	}
+	public String getReq_from() {
+		return req_from;
+	}
+	public void setReq_from(String req_from) {
+		this.req_from = req_from;
 	}
 
 }
