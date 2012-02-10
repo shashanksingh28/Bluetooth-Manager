@@ -42,7 +42,7 @@ public class RouteTable {
 					device, rreq.getHop_count());
 			table.add(new_r);
 			showTable();
-			Route_Message rrep= new Route_Message(new_r.getSeq_Number(),BluetoothManagerService.selfAddress, 
+			Route_Message rrep= new Route_Message(PacketReceiver.RREP,new_r.getSeq_Number(),BluetoothManagerService.selfAddress, 
 					new_r.getDest_addr(),1);
 			unicastRREP(device, rrep);
 		}
@@ -138,11 +138,13 @@ public class RouteTable {
 	static void broadcastRREQ(Route_Message rreq)
 	{
 		//code here to send broadcast RREQ
+		BluetoothManagerService.connection.broadcastMessage(rreq.toString());
 	}
 	
 	static void unicastRREP(String device,Route_Message rrep)
 	{
 		//code here to send unicast RREP to device
+		BluetoothManagerService.connection.sendMessage(device, rrep.toString());
 	}
 	
 	static void forwardMessage(String device,String data)

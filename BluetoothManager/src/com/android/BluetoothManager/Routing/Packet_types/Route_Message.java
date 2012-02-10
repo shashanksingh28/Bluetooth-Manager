@@ -1,5 +1,7 @@
 package com.android.BluetoothManager.Routing.Packet_types;
 
+import com.android.BluetoothManager.Routing.PacketReceiver;
+
 // Route Request Packet Structure
 public class Route_Message 
 {
@@ -7,8 +9,9 @@ public class Route_Message
 	String originator_addr;
 	String dest_addr;
 	int hop_count;
+	int packet_type;
 	
-	public Route_Message(long seq_number, String src_addr, String dest_addr, int hop_count) {
+	public Route_Message(int packet_type,long seq_number, String src_addr, String dest_addr, int hop_count) {
 		super();
 		this.originator_seqNumber = seq_number;
 		this.originator_addr = src_addr;
@@ -48,5 +51,10 @@ public class Route_Message
 		this.hop_count = hop_count;
 	}
 
+	@Override
+	public String toString() {
+		return packet_type+","+originator_seqNumber+","+originator_addr+","+dest_addr+","+hop_count;
+	}
+	 
 	
 }

@@ -14,8 +14,8 @@ public class PacketHandler {
 		long originator_seqNumber = Long.parseLong(packet_fields[1]);
 		String originator_addr = packet_fields[2];
 		String dest_addr = packet_fields[3];
-		int no_of_hops = Integer.parseInt(packet_fields[5]);
-		Route_Message rreq= new Route_Message(originator_seqNumber, originator_addr, dest_addr,no_of_hops);
+		int no_of_hops = Integer.parseInt(packet_fields[4]);
+		Route_Message rreq= new Route_Message(PacketReceiver.RREQ,originator_seqNumber, originator_addr, dest_addr,no_of_hops);
 		//RREQ parsed, now check
 		RouteTable.checkRREQ(device,rreq);
 		
@@ -28,8 +28,8 @@ public class PacketHandler {
 		long originator_seqNumber = Long.parseLong(packet_fields[1]);
 		String originator_addr = packet_fields[2];
 		String dest_addr = packet_fields[3];
-		int no_of_hops = Integer.parseInt(packet_fields[5]);
-		Route_Message rrep= new Route_Message(originator_seqNumber, originator_addr, dest_addr,no_of_hops);
+		int no_of_hops = Integer.parseInt(packet_fields[4]);
+		Route_Message rrep= new Route_Message(PacketReceiver.RREP,originator_seqNumber, originator_addr, dest_addr,no_of_hops);
 		//RREP parsed, now check
 		RouteTable.checkRREP(device,rrep);
 

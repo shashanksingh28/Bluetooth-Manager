@@ -27,7 +27,7 @@ public class BluetoothManagerService extends Service{
 	private final String TAG="com.android.BluetoothManager.Service";
 	
 	//Connection object which initiates the radio level
-	Connection connection;
+	static public Connection connection;
 	
 	//My bluetooth Address
 	public static String selfAddress;
