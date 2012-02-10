@@ -2,17 +2,16 @@ package com.android.BluetoothManager.Application;
 
 import com.android.BluetoothManager.Radio.BluetoothManagerService;
 import com.android.BluetoothManager.Routing.PacketReceiver;
-
+import com.android.BluetoothManager.Routing.RouteTable;
 import android.app.Application;
 import android.content.Intent;
 import android.content.IntentFilter;
 
 /*
  * Contains global adapters and other state variables required
- * Initialzes the service
+ * Initializes the service
  */
 public class BluetoothManagerApplication extends Application {
-
 	
 	//Packet Reciever object
 	PacketReceiver packet_receiver;
@@ -31,6 +30,9 @@ public class BluetoothManagerApplication extends Application {
 		
 		//register the PacketReciever to listen
 		registerReceiver(packet_receiver, new IntentFilter(PACKET_RECEIVE_INTENT_ACTION));
+		
+		//initialize the route table on startup
+		RouteTable.initializeRouteTable();
 		
 		startService(new Intent(this,BluetoothManagerService.class));
 	}

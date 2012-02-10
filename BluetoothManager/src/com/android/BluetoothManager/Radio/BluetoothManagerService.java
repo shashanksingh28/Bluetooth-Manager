@@ -1,7 +1,6 @@
 package com.android.BluetoothManager.Radio;
 import android.app.Service;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -11,7 +10,6 @@ import com.android.BluetoothManager.Radio.Connection.OnConnectionServiceReadyLis
 import com.android.BluetoothManager.Radio.Connection.OnIncomingConnectionListener;
 import com.android.BluetoothManager.Radio.Connection.OnMaxConnectionsReachedListener;
 import com.android.BluetoothManager.Radio.Connection.OnMessageReceivedListener;
-import com.android.BluetoothManager.Routing.PacketReceiver;
 
 /*
  * Service that starts server and initializes the radio layer
@@ -40,8 +38,6 @@ public class BluetoothManagerService extends Service{
 		return null;
 	}
 
-	
-	
 	
 	@Override
 	public void onCreate() {
