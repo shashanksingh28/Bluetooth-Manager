@@ -27,8 +27,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
 
-
-
 /**
  * A simple activity that displays a prompt telling users to enable discoverable
  * mode for Bluetooth.
