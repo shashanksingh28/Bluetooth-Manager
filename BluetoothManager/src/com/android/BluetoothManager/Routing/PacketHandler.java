@@ -1,42 +1,37 @@
 package com.android.BluetoothManager.Routing;
 
-import java.util.Date;
-
-import com.android.BluetoothManager.Routing.Packet_types.RREP_packet;
-import com.android.BluetoothManager.Routing.Packet_types.RREQ_packet;
+import com.android.BluetoothManager.Routing.Packet_types.*;
 
 /*
- * Class that will handle procesing of packets
+ * Class that will handle processing of packets
  */
 public class PacketHandler {
 
 	
 	public static int processRREQ(String device, String msg) {
-		//make the RREQ object after splitting
+		//parse RREQ from msg
 		String packet_fields[] = msg.split(",");
-		long seq_number = Long.parseLong(packet_fields[1]);
-		String source_mac = packet_fields[2];
-		String dest_mac = packet_fields[3];
-		String from_mac= packet_fields[4];
+		long originator_seqNumber = Long.parseLong(packet_fields[1]);
+		String originator_addr = packet_fields[2];
+		String dest_addr = packet_fields[3];
 		int no_of_hops = Integer.parseInt(packet_fields[5]);
-		RREQ_packet rreq= new RREQ_packet(seq_number, source_mac, dest_mac, from_mac, no_of_hops);
-		//Route packet created, now check
-		RouteTable.checkRREQ(rreq);
+		Route_Message rreq= new Route_Message(originator_seqNumber, originator_addr, dest_addr,no_of_hops);
+		//RREQ parsed, now check
+		RouteTable.checkRREQ(device,rreq);
 		
 		return 0;
 	}
 
 	public static int processRREP(String device, String msg) {
-		
+		//parse RREP from msg
 		String packet_fields[] = msg.split(",");
-		long seq_number = Long.parseLong(packet_fields[1]);
-		String source_mac = packet_fields[2];
-		String dest_mac = packet_fields[3];
-		String from_mac= packet_fields[4];
+		long originator_seqNumber = Long.parseLong(packet_fields[1]);
+		String originator_addr = packet_fields[2];
+		String dest_addr = packet_fields[3];
 		int no_of_hops = Integer.parseInt(packet_fields[5]);
-		
-		RREP_packet rrep= new RREP_packet(seq_number, source_mac, dest_mac, from_mac, no_of_hops);
-		RouteTable.checkRREP(rrep);
+		Route_Message rrep= new Route_Message(originator_seqNumber, originator_addr, dest_addr,no_of_hops);
+		//RREP parsed, now check
+		RouteTable.checkRREP(device,rrep);
 
 		return 0;
 	}
@@ -46,29 +41,13 @@ public class PacketHandler {
 		return 0;
 	}
 
+	//function to process data, returns -1 if an RERR occurs, 0 if not
 	public static int processData(String device, String msg) {
 		
 		String packet_fields[] = msg.split(",");
-		long seq_number = Long.parseLong(packet_fields[1]);
-		String dest_mac = packet_fields[2];
-		Route r=RouteTable.routePresent(dest_mac);
-		if(r!=null)
-		{
-			String hop_addr=r.getHop_addr();
-			if(hop_addr.equals("?"))
-			{
-				//send RERR
-			}
-			else
-			{
-				//forward msg to hop_addr 
-			}
-		}
-		else
-		{
-			//no route exists, send RERR
-		}
-		return 0;
+		String dest_addr=packet_fields[1];
+		String data=packet_fields[2];
+		return RouteTable.checkData(device, dest_addr, data);
 	}
 
 }
