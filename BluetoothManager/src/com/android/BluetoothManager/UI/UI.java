@@ -1,5 +1,10 @@
 package com.android.BluetoothManager.UI;
 
+import com.android.BluetoothManager.Application.BluetoothManagerApplication;
+import com.android.BluetoothManager.Routing.PacketHandler;
+import com.android.BluetoothManager.Routing.PacketHandlerHelper;
+
+import android.app.Activity;
 import android.app.TabActivity;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -10,6 +15,8 @@ import android.widget.TabHost;
 public class UI extends TabActivity {
 	
 	
+	private static final int DEVICE_LIST_ACTIVITY = 0;
+
 	private final String TAG = "UI";
 	
 	//Receiver for UI packets.
@@ -59,5 +66,18 @@ public class UI extends TabActivity {
 		 */
 		ui_packet_receiver = new UIPacketReceiver();
 		registerReceiver(ui_packet_receiver, new IntentFilter());
+		startActivityForResult(new Intent(this,DeviceListActivity.class), DEVICE_LIST_ACTIVITY);
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if((requestCode == DEVICE_LIST_ACTIVITY)&&(resultCode == Activity.RESULT_OK)){
+			String destination = data.getStringExtra(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
+			Intent i = new Intent();
+			i.putExtra("layer", "UI");
+			i.putExtra("device", destination);
+			i.putExtra("msg","This is a test msg !!");
+			sendBroadcast(new Intent(BluetoothManagerApplication.PACKET_RECEIVE_INTENT_ACTION));
+		}
 	}
 }

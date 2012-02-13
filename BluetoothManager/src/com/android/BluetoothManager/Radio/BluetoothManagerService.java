@@ -86,6 +86,7 @@ public class BluetoothManagerService extends Service{
 			Intent intent = new Intent(BluetoothManagerApplication.PACKET_RECEIVE_INTENT_ACTION);
 			intent.putExtra("device", device);
 			intent.putExtra("msg", message);
+			intent.putExtra("layer","radio");
 			
 			//Broadcast that a bluetooth message has been recieved,the device and the message as extras
 			sendBroadcast(intent);

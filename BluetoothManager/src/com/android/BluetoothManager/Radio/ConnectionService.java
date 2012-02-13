@@ -54,7 +54,7 @@ public class ConnectionService extends Service {
 
 	private IConnectionCallback mCallback;
 
-	private ArrayList<String> mBtDeviceAddresses;
+	public ArrayList<String> mBtDeviceAddresses;
 
 	private HashMap<String, BluetoothSocket> mBtSockets;
 

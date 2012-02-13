@@ -38,11 +38,11 @@ public class RouteTable {
 	public static void checkRREQ(String device, Route_Message rreq) {
 		if(isDestination(rreq.getDest_addr()))
 		{
-			Route new_r= new Route(System.currentTimeMillis()/1000, rreq.getOriginator_addr(), 
+			Route new_r= new Route(getSequenceNumber(), rreq.getOriginator_addr(), 
 					device, rreq.getHop_count());
 			table.add(new_r);
 			showTable();
-			Route_Message rrep= new Route_Message(PacketReceiver.RREP,new_r.getSeq_Number(),BluetoothManagerService.selfAddress, 
+			Route_Message rrep= new Route_Message(PacketHandler.RREP,new_r.getSeq_Number(),BluetoothManagerService.selfAddress, 
 					new_r.getDest_addr(),1);
 			unicastRREP(device, rrep);
 		}
@@ -150,6 +150,7 @@ public class RouteTable {
 	static void forwardMessage(String device,String data)
 	{
 		//code here to forward data to device
+		BluetoothManagerService.connection.sendMessage(device, data);
 	}
 	
 	static void showTable()
@@ -157,7 +158,7 @@ public class RouteTable {
 		Iterator<Route> itr= table.iterator();
 		Route temp;
 		String msg;
-		Log.d(TAG, "Displaying route table at "+System.currentTimeMillis()/1000);
+		Log.d(TAG, "Displaying route table at "+getSequenceNumber());
 		while(itr.hasNext())
 		{
 			temp=itr.next();
@@ -167,5 +168,8 @@ public class RouteTable {
 		}
 	}
 
+	static long getSequenceNumber(){
+		return System.currentTimeMillis()/1000;
+	}
 	
 }

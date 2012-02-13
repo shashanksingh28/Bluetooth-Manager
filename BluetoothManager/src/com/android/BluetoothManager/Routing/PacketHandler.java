@@ -1,53 +1,96 @@
 package com.android.BluetoothManager.Routing;
 
-import com.android.BluetoothManager.Routing.Packet_types.*;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.util.Log;
 
-/*
- * Class that will handle processing of packets
+import com.android.BluetoothManager.Radio.BluetoothManagerService;
+import com.android.BluetoothManager.Routing.Packet_types.Route_Message;
+
+/* 
+ * Class that will recieve packets, distinguish their type
+ * and call respective function of the PacketHandler
+ * 
+ * String for this receiver: 
+ * PACKET_RECEIVE_INTENT_ACTION = "com.android.BluetoothManager.PACKET_RECEIVED";
+ * 
  */
-public class PacketHandler {
+public class PacketHandler extends BroadcastReceiver {
 
+	private static final String TAG = "PacketHandler";
 	
-	public static int processRREQ(String device, String msg) {
-		//parse RREQ from msg
-		String packet_fields[] = msg.split(",");
-		long originator_seqNumber = Long.parseLong(packet_fields[1]);
-		String originator_addr = packet_fields[2];
-		String dest_addr = packet_fields[3];
-		int no_of_hops = Integer.parseInt(packet_fields[4]);
-		Route_Message rreq= new Route_Message(PacketReceiver.RREQ,originator_seqNumber, originator_addr, dest_addr,no_of_hops);
-		//RREQ parsed, now check
-		RouteTable.checkRREQ(device,rreq);
-		
-		return 0;
+	// Integers for types of packets according to DYMO protocol
+	public static final int RREQ = 1;
+	public static final int RREP = 2;
+	public static final int RERR = 3;
+	public static final int DATA = 4;
+
+	/*
+	 * Function called when protocol layer receives a packet.first check from
+	 * which layer sent the data and act accordingly.
+	 */
+	@Override
+	public void onReceive(Context context, Intent intent) {
+
+		String layer = intent.getExtras().getString("layer");
+		String device = intent.getExtras().getString("device");
+		String msg = intent.getExtras().getString("msg");
+
+		if (layer.equals("radio")) {
+			int type = getType(msg);
+			switch (type) {
+			case RREQ:
+				PacketHandlerHelper.processRREQ(device, msg);
+				break;
+
+			case RREP:
+				PacketHandlerHelper.processRREP(device, msg);
+				break;
+
+			case RERR:
+				PacketHandlerHelper.processRERR(device, msg);
+				break;
+
+			case DATA:
+				PacketHandlerHelper.processData(device, msg);
+				break;
+
+			default:
+				break;
+			}
+		} else if (layer.equals("UI")) {
+			/*
+			 * First check if route already exists for a given destination.
+			 * If yes, then send the data to that device.
+			 * If no, then broadcast a RREQ packet.
+			 */
+			
+			RouteTable.showTable();
+			
+			Log.d(TAG,"Checking if route exist.");
+			
+			Route isPresent = RouteTable.routeToDest(device);
+			
+			if (isPresent == null) {
+				Log.d(TAG,"Route for "+device+"doesn't exists. Sending RREQ");
+				Route_Message rreq = new Route_Message(PacketHandler.RREQ,
+						RouteTable.getSequenceNumber(),
+						BluetoothManagerService.selfAddress, device, 1);
+				RouteTable.broadcastRREQ(rreq);
+				Log.d(TAG,"RREQ broadcasted");
+				
+			} else {
+				RouteTable.forwardMessage(isPresent.getNext_hop(), msg);
+			}
+		}
+
 	}
 
-	public static int processRREP(String device, String msg) {
-		//parse RREP from msg
-		String packet_fields[] = msg.split(",");
-		long originator_seqNumber = Long.parseLong(packet_fields[1]);
-		String originator_addr = packet_fields[2];
-		String dest_addr = packet_fields[3];
-		int no_of_hops = Integer.parseInt(packet_fields[4]);
-		Route_Message rrep= new Route_Message(PacketReceiver.RREP,originator_seqNumber, originator_addr, dest_addr,no_of_hops);
-		//RREP parsed, now check
-		RouteTable.checkRREP(device,rrep);
-
-		return 0;
+	/*
+	 * Function which will return the type message(packet) which is passed to it
+	 */
+	int getType(String msg) {
+		return Integer.parseInt(msg.charAt(0) + "");
 	}
-
-	public static int processRERR(String device, String msg) {
-
-		return 0;
-	}
-
-	//function to process data, returns -1 if an RERR occurs, 0 if not
-	public static int processData(String device, String msg) {
-		
-		String packet_fields[] = msg.split(",");
-		String dest_addr=packet_fields[1];
-		String data=packet_fields[2];
-		return RouteTable.checkData(device, dest_addr, data);
-	}
-
 }
