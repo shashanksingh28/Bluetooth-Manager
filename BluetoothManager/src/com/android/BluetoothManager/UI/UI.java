@@ -72,7 +72,7 @@ public class UI extends TabActivity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if((requestCode == DEVICE_LIST_ACTIVITY)&&(resultCode == Activity.RESULT_OK)){
-			String destination = data.getStringExtra(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
+			String destination = "7C:61:93:B7:54:CD";//data.getStringExtra(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
 			Intent i = new Intent();
 			i.putExtra("layer", "UI");
 			i.putExtra("device", destination);
