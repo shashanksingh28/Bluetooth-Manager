@@ -56,7 +56,6 @@ public class BluetoothManagerApplication extends Application {
 
 		// Here starts the registration of the listeners for intents.
 
-		Log.d(TAG,"Startof 1 reg");
 		// Instantiate the PacketReciever and registering it to listen
 		packet_receiver = new PacketHandler(this);
 		IntentFilter r = new IntentFilter();
@@ -64,7 +63,6 @@ public class BluetoothManagerApplication extends Application {
 		r.addAction(RADIO_TO_ROUTING);
 		registerReceiver(packet_receiver, r);
 
-		Log.d(TAG,"Start of 2 reg");
 		// Instantiate the UI Receiver and registering it.
 		ui_packet_receiver = new UIPacketReceiver(this);
 		IntentFilter i = new IntentFilter();
@@ -72,7 +70,6 @@ public class BluetoothManagerApplication extends Application {
 		registerReceiver(ui_packet_receiver, i);
 
 		
-		Log.d(TAG,"Start of 3 reg");
 		// Instantiate the Radio layer receiver and register it.
 		radio_packet_receiver = new RadioPacketReceiver(this);
 		IntentFilter p = new IntentFilter();
@@ -80,15 +77,12 @@ public class BluetoothManagerApplication extends Application {
 		registerReceiver(radio_packet_receiver, p);
 		
 		
-		Log.d(TAG,"Startof 4 reg");
 		// initialize the route table on startup
 		route_table = new RouteTable(this);
 
-		Log.d(TAG,"Start of 5 reg");
 		// initialize the packet helper
 		packet_handler_helper = new PacketHandlerHelper(this);
 
-		Log.d(TAG,"Start of 6 reg");
 		startService(new Intent(this, BluetoothManagerService.class));
 	}
 
