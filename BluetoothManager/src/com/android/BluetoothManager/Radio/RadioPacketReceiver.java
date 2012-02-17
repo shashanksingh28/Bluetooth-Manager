@@ -1,19 +1,19 @@
-package com.android.BluetoothManager.UI;
+package com.android.BluetoothManager.Radio;
 
 import com.android.BluetoothManager.Application.BluetoothManagerApplication;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
-public class UIPacketReceiver extends BroadcastReceiver {
+/*
+ * This class receives data from the routing layer and sends it to other devices over the radio layer
+ */
+public class RadioPacketReceiver extends BroadcastReceiver{
 
-	private final String TAG = "UIPacketReceiver"; 
-	
 	BluetoothManagerApplication bluetooth_manager;
-
-	public UIPacketReceiver(BluetoothManagerApplication bluetooth_manager) {
+	
+	public RadioPacketReceiver(BluetoothManagerApplication bluetooth_manager) {
 		this.bluetooth_manager = bluetooth_manager;
 	}
 	
@@ -21,7 +21,7 @@ public class UIPacketReceiver extends BroadcastReceiver {
 	public void onReceive(Context context, Intent intent) {
 		String device = intent.getStringExtra("device");
 		String msg = intent.getStringExtra("msg");
-		Log.d(TAG, "Received msg:"+msg+" from:"+device);
+		bluetooth_manager.connection.sendMessage(device, msg);
 	}
 
 }

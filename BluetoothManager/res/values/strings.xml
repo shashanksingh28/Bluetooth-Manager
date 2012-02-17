@@ -13,5 +13,8 @@
     <string name="none_found">No devices found</string>
     <string name="scanning">scanning for devices...</string>
     <string name="select_device">select a device to connect</string>
-
+	<string name="UI_TO_ROUTING">com.android.BluetoothManager.UI_TO_ROUTING</string>
+	<string name="RADIO_TO_ROUTING">com.android.BluetoothManager.RADIO_TO_ROUTING</string>
+	<string name="ROUTING_TO_RADIO">com.android.BluetoothManager.ROUTING_TO_RADIO</string>
+	<string name="ROUTING_TO_UI">com.android.BluetoothManager.ROUTING_TO_UI</string>
 </resources>

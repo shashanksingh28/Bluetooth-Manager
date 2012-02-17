@@ -1,0 +1,24 @@
+
+
+
+1. UI layer communicates with the Routing layer using the following broadcast intent:
+   The Routing Layer Receiver can receive msg from both the UI layer as well the Radio layer. 
+    Defined in Strings.xml.
+    Registered in Application object i.e. BluetoothManagerApplication.
+     
+	Intent 
+		Action: com.android.BluetoothManager.UI_TO_ROUTING
+		Extras:[<key:value> pairs]
+			layer:ui 
+			device:Address of the device to which the msg is to be sent.
+			msg:Actual message
+	
+2. UI layer communicates with the Routing layer using the following broadcast intent:
+
+
+   
+3. Routing layer communicates with the Radio layer using the following broadcast intent:
+	
+
+
+4. Routing layer communicates with the UI layer using the following intent:

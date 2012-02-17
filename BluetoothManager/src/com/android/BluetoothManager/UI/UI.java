@@ -1,39 +1,32 @@
 package com.android.BluetoothManager.UI;
 
-import com.android.BluetoothManager.Application.BluetoothManagerApplication;
-import com.android.BluetoothManager.Routing.PacketHandler;
-import com.android.BluetoothManager.Routing.PacketHandlerHelper;
-
 import android.app.Activity;
 import android.app.TabActivity;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TabHost;
+import android.widget.Toast;
 
 public class UI extends TabActivity {
-	
-	
+
 	private static final int DEVICE_LIST_ACTIVITY = 0;
 
 	private final String TAG = "UI";
-	
-	//Receiver for UI packets.
-	UIPacketReceiver ui_packet_receiver;
-	
-	//Action String for receiving packets at UI layer.
-	private final String UI_PACKET_RECEIVED = "com.android.BluetoothManager.UI_PACKET_RECEIVED";
+
 	
 	/** Called when the activity is first created. */
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.ui);
-
+		Toast.makeText(this, "Arihant", Toast.LENGTH_SHORT).show();
+		
 		Resources res = getResources(); // Resource object to get Drawables
 		TabHost tabHost = getTabHost(); // The activity TabHost
-		TabHost.TabSpec spec; 			// Resusable TabSpec for each tab
-		Intent intent; 					// Reusable Intent for each tab
+		TabHost.TabSpec spec; // Resusable TabSpec for each tab
+		Intent intent; // Reusable Intent for each tab
 
 		// Create an Intent to launch an Activity for the tab (to be reused)
 		intent = new Intent().setClass(this, MessageUI.class);
@@ -60,24 +53,48 @@ public class UI extends TabActivity {
 
 		tabHost.setCurrentTab(0);
 		
-		
-		/*
-		 * Instatiating the Reciver and registering it.
-		 */
-		ui_packet_receiver = new UIPacketReceiver();
-		registerReceiver(ui_packet_receiver, new IntentFilter());
-		startActivityForResult(new Intent(this,DeviceListActivity.class), DEVICE_LIST_ACTIVITY);
+		// the rest for just testing purpose
+		String address = BluetoothAdapter.getDefaultAdapter().getAddress();//((BluetoothManagerApplication)getApplication()).getSelfAddress();
+		Toast.makeText(this, address, Toast.LENGTH_SHORT).show();
+		if (address.equals("F4:9F:54:58:11:6A")) {
+			Toast.makeText(this, "Sending msg after 5 secs awrsd", Toast.LENGTH_SHORT)
+					.show();
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+				Log.d(TAG, "++ Sleep Interrupted ++");
+			}
+
+			
+			// Temporarily sending fake data:
+			String destination = "7C:61:93:B7:54:CD";// data.getStringExtra(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
+			String ACTION = getResources().getString(R.string.UI_TO_ROUTING);
+			Intent i = new Intent();
+			i.setAction(ACTION);
+			i.putExtra("layer", "UI");
+			i.putExtra("type", "singlehop"); // to skip routing while testing
+												// the radio layer.
+			i.putExtra("device", destination);
+			i.putExtra("msg", "4,7C:61:93:B7:54:CD,This is a test msg !!");
+			sendBroadcast(i);
+		}
+
+		// startActivityForResult(new Intent(this,DeviceListActivity.class),
+		// DEVICE_LIST_ACTIVITY);
 	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if((requestCode == DEVICE_LIST_ACTIVITY)&&(resultCode == Activity.RESULT_OK)){
-			String destination = "7C:61:93:B7:54:CD";//data.getStringExtra(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
+		if ((requestCode == DEVICE_LIST_ACTIVITY)
+				&& (resultCode == Activity.RESULT_OK)) {
+			String destination = "7C:61:93:B7:54:CD";// data.getStringExtra(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
+			String ACTION = getResources().getString(R.string.UI_TO_ROUTING);
 			Intent i = new Intent();
+			i.setAction(ACTION);
 			i.putExtra("layer", "UI");
 			i.putExtra("device", destination);
-			i.putExtra("msg","This is a test msg !!");
-			sendBroadcast(new Intent(BluetoothManagerApplication.PACKET_RECEIVE_INTENT_ACTION));
+			i.putExtra("msg", "This is a test msg !!");
+			sendBroadcast(i);
 		}
 	}
 }
