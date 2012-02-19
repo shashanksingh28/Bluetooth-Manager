@@ -1,13 +1,16 @@
 package com.android.BluetoothManager.Routing;
 
+import android.util.Log;
+
 import com.android.BluetoothManager.Application.BluetoothManagerApplication;
-import com.android.BluetoothManager.Routing.Packet_types.*;
+import com.android.BluetoothManager.Routing.Packet_types.Route_Message;
 
 /*
  * Class that will handle processing of packets
  */
 public class PacketHandlerHelper {
 
+	private static final String TAG = "PacketHandlerHelper";
 	BluetoothManagerApplication bluetooth_manager;
 	
 	public PacketHandlerHelper(BluetoothManagerApplication bluetooth_manager) {
@@ -17,6 +20,7 @@ public class PacketHandlerHelper {
 	
 	public int processRREQ(String device, String msg) {
 		//parse RREQ from msg
+		Log.d(TAG,"Msg in PHH: "+msg);
 		String packet_fields[] = msg.split(",");
 		long originator_seqNumber = Long.parseLong(packet_fields[1]);
 		String originator_addr = packet_fields[2];

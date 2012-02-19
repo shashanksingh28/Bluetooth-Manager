@@ -78,8 +78,7 @@ public class PacketHandler extends BroadcastReceiver {
 			 * RREQ packet.
 			 */
 
-			bluetooth_manager.route_table.showTable();
-
+			
 			Log.d(TAG, "Checking if route exist.");
 
 			Route isPresent = bluetooth_manager.route_table.routeToDest(device);

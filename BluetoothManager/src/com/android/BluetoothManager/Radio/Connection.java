@@ -133,6 +133,7 @@ public class Connection {
 			address = deviceAddress;
 		}
 
+		
 		public void run() {
 			int bufferSize = 1024;
 			byte[] buffer = new byte[bufferSize];
@@ -228,14 +229,18 @@ public class Connection {
 
 	private int connect(String device) throws RemoteException {
 
+		Log.d(TAG,"Trying to connect to: "+device);
 		if(BtDeviceAddresses.contains(device)){
+			Log.d(TAG,"Already connected to: "+device);
 			return Connection.SUCCESS;
 		}
 		
 		BluetoothDevice myBtServer = BtAdapter.getRemoteDevice(device);
 
 		BluetoothSocket myBSock = null;
-
+		
+		Log.d(TAG,"Creating Sockets");
+		
 		for (int i = 0; i < Connection.MAX_CONNECTIONS_SUPPORTED
 				&& myBSock == null; i++) {
 			myBSock = getConnectedSocket(myBtServer, Uuids.get(i));
@@ -267,14 +272,16 @@ public class Connection {
 		BluetoothSocket myBSock;
 		try {
 			myBSock = myBtServer.createRfcommSocketToServiceRecord(uuidToTry);
+			Log.d(TAG,"Trying to connect to socket of:"+myBtServer.getAddress());
 			myBSock.connect();
 			return myBSock;
 		} catch (IOException e) {
-			Log.i(TAG, "IOException in getConnectedSocket", e);
+			Log.i(TAG, "IOException in getConnectedSocket. Msg:"+e.getMessage());
 		}
 		return null;
 	}
 
+	
 	public int broadcastMessage(String message) throws RemoteException {
 		
 		connectToFoundDevices();
@@ -363,6 +370,7 @@ public class Connection {
 	}
 
 	public void connectToFoundDevices(){
+		Log.d(TAG,"connectToFoundDevices() called");
 		Iterator devices = BtFoundDevices.entrySet().iterator();
 		while (devices.hasNext()) {
 			Map.Entry<String, String> device = (Map.Entry<String, String>) devices
@@ -389,6 +397,7 @@ public class Connection {
 				// If it's already paired, skip it, because it's been listed
 				// already
 				BtFoundDevices.put(device.getAddress(), device.getName());
+				Log.d(TAG,"Found "+device.getAddress());
 				// When discovery is finished, change the Activity title
 			} else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED
 					.equals(action)) {

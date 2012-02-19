@@ -29,6 +29,14 @@ public class RouteTable {
 
 	// check if current device is destination
 	boolean isDestination(String Bluetooth_Addr) {
+		Log.d(TAG,"My BT ADD:"+bluetooth_manager.getSelfAddress());
+		Log.d(TAG,"Received BT ADD:"+Bluetooth_Addr);
+		try {
+			Thread.sleep(10000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		if (bluetooth_manager.getSelfAddress().equals(Bluetooth_Addr)) {
 			return true;
 		} else

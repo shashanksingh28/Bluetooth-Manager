@@ -24,6 +24,7 @@ public class RadioPacketReceiver extends BroadcastReceiver{
 	public void onReceive(Context context, Intent intent) {
 		String device = intent.getStringExtra("device");
 		String msg = intent.getStringExtra("msg");
+		Log.d(TAG,"Received:"+msg+" from:"+device);
 		try {
 			if(device == null){
 				bluetooth_manager.connection.broadcastMessage(msg);

@@ -52,8 +52,8 @@ public class Route_Message
 
 	@Override
 	public String toString() {
-		return packet_type+","+"Originator Seq : "+originator_seqNumber+" Originator Address : "+originator_addr+
-		" Destination Address : "+dest_addr+" Hop Count : "+hop_count;
+		return packet_type+","+originator_seqNumber+","+originator_addr+
+		","+dest_addr+","+hop_count;
 	}
 	 
 	
