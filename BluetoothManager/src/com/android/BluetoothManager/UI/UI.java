@@ -1,6 +1,5 @@
 package com.android.BluetoothManager.UI;
 
-import android.app.Activity;
 import android.app.TabActivity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
@@ -21,7 +20,6 @@ public class UI extends TabActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.ui);
-		Toast.makeText(this, "Arihant", Toast.LENGTH_SHORT).show();
 		
 		Resources res = getResources(); // Resource object to get Drawables
 		TabHost tabHost = getTabHost(); // The activity TabHost
@@ -30,7 +28,7 @@ public class UI extends TabActivity {
 
 		// Create an Intent to launch an Activity for the tab (to be reused)
 		intent = new Intent().setClass(this, MessageUI.class);
-
+ 
 		// Initialize a TabSpec for each tab and add it to the TabHost
 		spec = tabHost
 				.newTabSpec("message")
@@ -85,16 +83,16 @@ public class UI extends TabActivity {
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if ((requestCode == DEVICE_LIST_ACTIVITY)
-				&& (resultCode == Activity.RESULT_OK)) {
-			String destination = "7C:61:93:B7:54:CD";// data.getStringExtra(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
-			String ACTION = getResources().getString(R.string.UI_TO_ROUTING);
-			Intent i = new Intent();
-			i.setAction(ACTION);
-			i.putExtra("layer", "UI");
-			i.putExtra("device", destination);
-			i.putExtra("msg", "This is a test msg !!");
-			sendBroadcast(i);
-		}
+//		if ((requestCode == DEVICE_LIST_ACTIVITY)
+//				&& (resultCode == Activity.RESULT_OK)) {
+//			String destination = "7C:61:93:B7:54:CD";// data.getStringExtra(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
+//			String ACTION = getResources().getString(R.string.UI_TO_ROUTING);
+//			Intent i = new Intent();
+//			i.setAction(ACTION);
+//			i.putExtra("layer", "UI");
+//			i.putExtra("device", destination);
+//			i.putExtra("msg", "This is a test msg !!");
+//			sendBroadcast(i);
+//		}
 	}
 }

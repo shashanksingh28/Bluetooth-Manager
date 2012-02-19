@@ -27,7 +27,6 @@ public class RouteTable {
 		}
 	}
 
-	
 	// check if current device is destination
 	boolean isDestination(String Bluetooth_Addr) {
 		if (bluetooth_manager.getSelfAddress().equals(Bluetooth_Addr)) {
@@ -37,65 +36,92 @@ public class RouteTable {
 	}
 
 	public void checkRREQ(String device, Route_Message rreq) {
-		if (isDestination(rreq.getDest_addr())) {
-			Route new_r = new Route(getSequenceNumber(),
+		// First check if route is present for the originator
+		Log.d(TAG, "RREQ received at " + bluetooth_manager.getSelfAddress()
+				+ "\n" + rreq.toString());
+
+		Route isPresent = routeToDest(rreq.getOriginator_addr());
+
+		if (isPresent == null) {
+			// not present, make new entry
+			Route new_r = new Route(rreq.getOriginator_seqNumber(),
 					rreq.getOriginator_addr(), device, rreq.getHop_count());
+			Log.d(TAG, "Route created at " + bluetooth_manager.getSelfAddress());
 			table.add(new_r);
 			showTable();
+		} else {
+			// entry present, check if its latest and shorter?
+			if (isPresent.getSeq_Number() < rreq.getOriginator_seqNumber()
+					|| isPresent.getHop_count() > rreq.getHop_count()) {
+				isPresent.setSeq_Number(rreq.getOriginator_seqNumber());
+				isPresent.setNext_hop(device);
+				isPresent.setHop_count(rreq.getHop_count());
+				Log.d(TAG,
+						"Route Modified at "
+								+ bluetooth_manager.getSelfAddress()
+								+ isPresent.toString());
+			}
+		}
+
+		// Table done, now decide if broadcast or send RREP
+		if (isDestination(rreq.getDest_addr())) {
 			Route_Message rrep = new Route_Message(PacketHandler.RREP,
-					new_r.getSeq_Number(), bluetooth_manager.getSelfAddress(),
-					new_r.getDest_addr(), 1);
+					getSequenceNumber(), bluetooth_manager.getSelfAddress(),
+					rreq.getOriginator_addr(), 1);
 			unicastRREP(device, rrep);
 		} else {
-			Route isPresent = routeToDest(rreq.getOriginator_addr());
-			if (isPresent != null) {
-				// if Route Present, check if entry is stale and update if req
-				if (rreq.getOriginator_seqNumber() > isPresent.getSeq_Number()
-						|| rreq.getHop_count() < isPresent.getHop_count()) {
-					isPresent.setSeq_Number(rreq.getOriginator_seqNumber());
-					isPresent.setNext_hop(device);
-					isPresent.setHop_count(rreq.getHop_count());
-					rreq.setHop_count(rreq.getHop_count() + 1);
-					broadcastRREQ(rreq);
-				}
-			} else {
-				// Route not present, add new
-				Route new_r = new Route(rreq.getOriginator_seqNumber(),
-						rreq.getOriginator_addr(), device, rreq.getHop_count());
-				table.add(new_r);
-				showTable();
-				rreq.setHop_count(rreq.getHop_count() + 1);
-				broadcastRREQ(rreq);
-			}
+			rreq.setHop_count(rreq.getHop_count() + 1);
+			broadcastRREQ(rreq);
 		}
 	}
 
 	public void checkRREP(String device, Route_Message rrep) {
+		Log.d(TAG, "RREP received at " + bluetooth_manager.getSelfAddress()
+				+ "\n" + rrep.toString());
+		// First check if route to Originator Present
 
-		if (isDestination(rrep.getDest_addr())) {
+		Route isPresent = routeToDest(rrep.getOriginator_addr());
+		if (isPresent == null) {
+			// Route not present,(which should be ideally), add a new route
 			Route new_r = new Route(rrep.getOriginator_seqNumber(),
 					rrep.getOriginator_addr(), device, rrep.getHop_count());
 			table.add(new_r);
+			Log.d(TAG, "Route created at " + bluetooth_manager.getSelfAddress());
 			showTable();
-			// Connection established... Send Message here
 		} else {
-			Route new_r = new Route(rrep.getOriginator_seqNumber(),
-					rrep.getOriginator_addr(), device, rrep.getHop_count());
-			table.add(new_r);
-			showTable();
-			rrep.setHop_count(rrep.getHop_count() + 1);
+			// Route Present, check if its small or latest
+			if (isPresent.getSeq_Number() < rrep.getOriginator_seqNumber()
+					|| isPresent.getHop_count() > rrep.getHop_count()) {
+				isPresent.setSeq_Number(rrep.getOriginator_seqNumber());
+				isPresent.setNext_hop(device);
+				isPresent.setHop_count(rrep.getHop_count());
+				Log.d(TAG,
+						"Route Modified at "
+								+ bluetooth_manager.getSelfAddress()
+								+ isPresent.toString());
+			}
+		}
+
+		// Table done, now if this is destination,noitify route found, else
+		// unicast RREP
+		if (isDestination(rrep.getDest_addr())) {
+			// Connection established... Send Message here
+			Log.d(TAG, "Yipee!! I found a way to him");
+		} else {
 			Route r = routeToDest(rrep.getDest_addr());
+			rrep.setHop_count(rrep.getHop_count() + 1);
 			unicastRREP(r.getNext_hop(), rrep);
 		}
 
 	}
 
-	public  int checkData(String device, String dest_addr, String data) {
+	public int checkData(String device, String dest_addr, String data) {
 		if (isDestination(dest_addr)) {
-			String ACTION = bluetooth_manager.getResources().getString(R.string.ROUTING_TO_UI);
+			String ACTION = bluetooth_manager.getResources().getString(
+					R.string.ROUTING_TO_UI);
 			Intent i = new Intent();
 			i.putExtra("device", device);
-			i.putExtra("msg",data);
+			i.putExtra("msg", data);
 			i.setAction(ACTION);
 			bluetooth_manager.sendBroadcast(i);
 		} else {
@@ -125,27 +151,39 @@ public class RouteTable {
 
 	void broadcastRREQ(Route_Message rreq) {
 		// code here to send broadcast RREQ
-		try {
-			
-			// Intent to be put here.
-			bluetooth_manager.connection.broadcastMessage(rreq.toString());
-		} catch (RemoteException e) {
-			Log.d(TAG,"++ Error in broadcastRREQ()");
-		}
+		String ACTION = bluetooth_manager.getResources().getString(
+				R.string.ROUTING_TO_RADIO);
+		Intent i = new Intent();
+		i.setAction(ACTION);
+		i.putExtra("msg", rreq.toString());
+		bluetooth_manager.sendBroadcast(i);
+
 	}
 
 	void unicastRREP(String device, Route_Message rrep) {
 		// code here to send unicast RREP to device
-		
+
 		// Intent to be put here
-		bluetooth_manager.connection.sendMessage(device, rrep.toString());
+		String ACTION = bluetooth_manager.getResources().getString(
+				R.string.ROUTING_TO_RADIO);
+		Intent i = new Intent();
+		i.setAction(ACTION);
+		i.putExtra("device", device);
+		i.putExtra("msg", rrep.toString());
+		bluetooth_manager.sendBroadcast(i);
 	}
 
 	void forwardMessage(String device, String data) {
 		// code here to forward data to device
 		// intent to be put here
-		
-		bluetooth_manager.connection.sendMessage(device, data);
+		String ACTION = bluetooth_manager.getResources().getString(
+				R.string.ROUTING_TO_RADIO);
+		Intent i = new Intent();
+		i.setAction(ACTION);
+		i.putExtra("device", device);
+		i.putExtra("msg", data);
+		bluetooth_manager.sendBroadcast(i);
+
 	}
 
 	void showTable() {

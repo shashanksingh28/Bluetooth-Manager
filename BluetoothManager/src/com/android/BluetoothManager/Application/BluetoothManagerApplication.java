@@ -1,5 +1,7 @@
 package com.android.BluetoothManager.Application;
 
+import java.util.HashMap;
+
 import android.app.Application;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -99,6 +101,10 @@ public class BluetoothManagerApplication extends Application {
 			Log.d(TAG, " ++ Unable to retrieve selfAddress");
 		}
 		return null;
+	}
+	
+	public HashMap<String, String> getConnectableDevices(){
+		return connection.getConnectableDevices();
 	}
 
 }

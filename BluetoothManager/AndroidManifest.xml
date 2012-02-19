@@ -5,7 +5,7 @@
     android:versionName="1.0" >
 
     <uses-sdk android:minSdkVersion="7" />
-    
+
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 
@@ -15,19 +15,24 @@
         android:name="com.android.BluetoothManager.Application.BluetoothManagerApplication" >
         <activity
             android:label="@string/app_name"
-            android:name=".UI" >
+            android:name="com.android.BluetoothManager.UI.UI" >
             <intent-filter >
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.android.BluetoothManager.UI.MessageUI"></activity>
-        <activity android:name="com.android.BluetoothManager.UI.ChatUI"></activity>
-        <activity android:name="com.android.BluetoothManager.UI.FTPUI"></activity>
-        
-        <service android:name="com.android.BluetoothManager.Radio.BluetoothManagerService"></service>
-       
+        <activity android:name="com.android.BluetoothManager.UI.MessageUI" >
+        </activity>
+        <activity android:name="com.android.BluetoothManager.UI.ChatUI" >
+        </activity>
+        <activity android:name="com.android.BluetoothManager.UI.FTPUI" >
+        </activity>
+        <activity android:name="com.android.BluetoothManager.UI.DeviceListActivity" >
+        </activity>
+
+        <service android:name="com.android.BluetoothManager.Radio.BluetoothManagerService" >
+        </service>
     </application>
 
 </manifest>

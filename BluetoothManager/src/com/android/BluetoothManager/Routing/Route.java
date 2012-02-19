@@ -41,5 +41,10 @@ public class Route {
 		this.hop_count = hop_count;
 	}
 	
-	
+	public String toString()
+	{
+		String s="Seq Number : "+this.seq_Number+ " Destination : "+this.dest_addr+" Next Hop : "+
+		this.next_hop+" Hop Count : "+this.hop_count;
+		return s;
+	}
 }
