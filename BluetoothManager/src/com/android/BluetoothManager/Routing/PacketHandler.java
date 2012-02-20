@@ -3,12 +3,9 @@ package com.android.BluetoothManager.Routing;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentSender.SendIntentException;
 import android.util.Log;
-
 import com.android.BluetoothManager.Application.BluetoothManagerApplication;
 import com.android.BluetoothManager.Routing.Packet_types.Route_Message;
-import com.android.BluetoothManager.UI.R;
 
 /* 
  * Class that will recieve packets, distinguish their type
@@ -48,24 +45,24 @@ public class PacketHandler extends BroadcastReceiver {
 			case RREQ:
 				Log.d(TAG,"RREQ received by routing. Now processing.");
 				bluetooth_manager.packet_handler_helper
-						.processRREQ(device, msg);
+						.parseRREQ(device, msg);
 
 				break;
 
 			case RREP:
 				Log.d(TAG,"RREP received by routing. Now processing.");
 				bluetooth_manager.packet_handler_helper
-						.processRREP(device, msg);
+						.parseRREP(device, msg);
 				break;
 
 			case RERR:
 				bluetooth_manager.packet_handler_helper
-						.processRERR(device, msg);
+						.parseRERR(device, msg);
 				break;
 
 			case DATA:
 				bluetooth_manager.packet_handler_helper
-						.processData(device, msg);
+						.parseData(device, msg);
 				break;
 
 			default:
@@ -81,7 +78,7 @@ public class PacketHandler extends BroadcastReceiver {
 			
 			Log.d(TAG, "Checking if route exist.");
 
-			Route isPresent = bluetooth_manager.route_table.routeToDest(device);
+			Route isPresent = bluetooth_manager.route_table.getRouteToDest(device);
 
 			if (isPresent == null) {
 				Log.d(TAG, "Route for " + device

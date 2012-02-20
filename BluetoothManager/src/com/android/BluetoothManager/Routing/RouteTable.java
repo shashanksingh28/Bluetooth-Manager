@@ -2,12 +2,13 @@ package com.android.BluetoothManager.Routing;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 
 import android.content.Intent;
-import android.os.RemoteException;
 import android.util.Log;
 
 import com.android.BluetoothManager.Application.BluetoothManagerApplication;
+import com.android.BluetoothManager.Routing.Packet_types.Route_Error;
 import com.android.BluetoothManager.Routing.Packet_types.Route_Message;
 import com.android.BluetoothManager.UI.R;
 
@@ -43,22 +44,26 @@ public class RouteTable {
 			return false;
 	}
 
-	public void checkRREQ(String device, Route_Message rreq) {
-		// First check if route is present for the originator
+	public void processRREQ(String device, Route_Message rreq) {
+		
+		/* First check if route to Originator present. If yes, compare the two and update.
+		 * If no, add a new Route to originator of RREQ. Then check if self is destination.
+		 * If yes, then create an RREP and unicast it as the reply.
+		 * If no, broadcast the RREQ to other nodes
+		 */
+		
 		Log.d(TAG, "RREQ received at " + bluetooth_manager.getSelfAddress()
 				+ "\n" + rreq.toString());
 
-		Route isPresent = routeToDest(rreq.getOriginator_addr());
+		Route isPresent = getRouteToDest(rreq.getOriginator_addr());
 
 		if (isPresent == null) {
-			// not present, make new entry
 			Route new_r = new Route(rreq.getOriginator_seqNumber(),
 					rreq.getOriginator_addr(), device, rreq.getHop_count());
 			Log.d(TAG, "Route created at " + bluetooth_manager.getSelfAddress());
 			table.add(new_r);
 			showTable();
 		} else {
-			// entry present, check if its latest and shorter?
 			if (isPresent.getSeq_Number() < rreq.getOriginator_seqNumber()
 					|| isPresent.getHop_count() > rreq.getHop_count()) {
 				isPresent.setSeq_Number(rreq.getOriginator_seqNumber());
@@ -71,7 +76,6 @@ public class RouteTable {
 			}
 		}
 
-		// Table done, now decide if broadcast or send RREP
 		if (isDestination(rreq.getDest_addr())) {
 			Route_Message rrep = new Route_Message(PacketHandler.RREP,
 					getSequenceNumber(), bluetooth_manager.getSelfAddress(),
@@ -83,21 +87,24 @@ public class RouteTable {
 		}
 	}
 
-	public void checkRREP(String device, Route_Message rrep) {
+	public void processRREP(String device, Route_Message rrep) {
+		
+		/* First check if route to Originator present. If yes, compare the two and update
+		 * If no, add a new Route to originator of RREP. Then check if self is destination.
+		 * If yes, then channel established, do something 
+		 * If no, unicast the RREP to the nextHop for the intended Destination from table
+		 */
 		Log.d(TAG, "RREP received at " + bluetooth_manager.getSelfAddress()
 				+ "\n" + rrep.toString());
-		// First check if route to Originator Present
 
-		Route isPresent = routeToDest(rrep.getOriginator_addr());
+		Route isPresent = getRouteToDest(rrep.getOriginator_addr());
 		if (isPresent == null) {
-			// Route not present,(which should be ideally), add a new route
 			Route new_r = new Route(rrep.getOriginator_seqNumber(),
 					rrep.getOriginator_addr(), device, rrep.getHop_count());
 			table.add(new_r);
 			Log.d(TAG, "Route created at " + bluetooth_manager.getSelfAddress());
 			showTable();
 		} else {
-			// Route Present, check if its small or latest
 			if (isPresent.getSeq_Number() < rrep.getOriginator_seqNumber()
 					|| isPresent.getHop_count() > rrep.getHop_count()) {
 				isPresent.setSeq_Number(rrep.getOriginator_seqNumber());
@@ -110,20 +117,51 @@ public class RouteTable {
 			}
 		}
 
-		// Table done, now if this is destination,noitify route found, else
-		// unicast RREP
 		if (isDestination(rrep.getDest_addr())) {
-			// Connection established... Send Message here
+			//Do something here
 			Log.d(TAG, "Yipee!! I found a way to him");
 		} else {
-			Route r = routeToDest(rrep.getDest_addr());
+			Route r = getRouteToDest(rrep.getDest_addr());
 			rrep.setHop_count(rrep.getHop_count() + 1);
-			unicastRREP(r.getNext_hop(), rrep);
+			if(r!=null)	//It shouldn't be null, but what if?
+			{
+				unicastRREP(r.getNext_hop(), rrep);
+			}
 		}
 
 	}
 
-	public int checkData(String device, String dest_addr, String data) {
+	public void processRERR(String device, Route_Error rerr)
+	{
+		/* First check if the unreachable device is a destination in table.
+		 * If yes, check if the nextHop is the same as device.
+		 * 	If yes, delete the route and send RERR to all NextHops
+		 * If no, IGNORE
+		 */
+		
+		Route isPresent= this.getRouteToDest(rerr.getUnreachable_addr());
+		if(isPresent!=null)
+		{
+			if(isPresent.getNext_hop().equals(device))
+			{
+				table.remove(isPresent);
+				LinkedHashSet<String> nextHops=this.getAllNextHops();
+				Iterator<String> itr=nextHops.iterator();
+				while(itr.hasNext())
+				{
+					this.forwardMessage(itr.next(),rerr.toString());
+				}
+			}
+		}
+		
+	}
+	
+	public int processData(String device, String dest_addr, String data) {
+		/* First check if self is destination. If yes, pass on the data as an intent to UI
+		 * If no, check if route exists. If yes, then forward to next hop
+		 * If no, generate an RERR and send it to all routes present
+		 */
+		
 		if (isDestination(dest_addr)) {
 			String ACTION = bluetooth_manager.getResources().getString(
 					R.string.ROUTING_TO_UI);
@@ -133,11 +171,19 @@ public class RouteTable {
 			i.setAction(ACTION);
 			bluetooth_manager.sendBroadcast(i);
 		} else {
-			Route isPresent = routeToDest(dest_addr);
+			Route isPresent = getRouteToDest(dest_addr);
 			if (isPresent != null) {
 				forwardMessage(isPresent.getNext_hop(), data);
-			} else {
-				// Create RERR
+			} 
+			else 
+			{
+				Route_Error rerr=new Route_Error(PacketHandler.RERR,getSequenceNumber(),dest_addr);
+				LinkedHashSet<String> nextHops=this.getAllNextHops();
+				Iterator<String> itr=nextHops.iterator();
+				while(itr.hasNext())
+				{
+					this.forwardMessage(itr.next(),rerr.toString());
+				}
 				return -1;
 			}
 		}
@@ -145,7 +191,7 @@ public class RouteTable {
 	}
 
 	// Function which returns a current route to a specific destination
-	Route routeToDest(String dest) {
+	Route getRouteToDest(String dest) {
 		Route temp;
 		Iterator<Route> itr = table.iterator();
 		while (itr.hasNext()) {
@@ -157,6 +203,19 @@ public class RouteTable {
 		return null;
 	}
 
+	//Function returning non repeated set neighbors who are a part of a route
+	LinkedHashSet<String> getAllNextHops()
+	{
+		LinkedHashSet<String> allHops= new LinkedHashSet<String>();
+		Iterator<Route> itr=table.iterator();
+		while(itr.hasNext())
+		{
+			allHops.add(((Route)itr.next()).getNext_hop());
+		}
+		
+		return allHops;
+	}
+	
 	void broadcastRREQ(Route_Message rreq) {
 		// code here to send broadcast RREQ
 		String ACTION = bluetooth_manager.getResources().getString(
@@ -170,7 +229,6 @@ public class RouteTable {
 
 	void unicastRREP(String device, Route_Message rrep) {
 		// code here to send unicast RREP to device
-
 		// Intent to be put here
 		String ACTION = bluetooth_manager.getResources().getString(
 				R.string.ROUTING_TO_RADIO);
@@ -182,8 +240,7 @@ public class RouteTable {
 	}
 
 	void forwardMessage(String device, String data) {
-		// code here to forward data to device
-		// intent to be put here
+		
 		String ACTION = bluetooth_manager.getResources().getString(
 				R.string.ROUTING_TO_RADIO);
 		Intent i = new Intent();
