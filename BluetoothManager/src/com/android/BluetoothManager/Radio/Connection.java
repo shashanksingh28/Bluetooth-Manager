@@ -76,6 +76,9 @@ public class Connection {
 	Connection(Context context) {
 
 		BtAdapter = BluetoothAdapter.getDefaultAdapter();
+		if (BtAdapter != null) {
+			BtAdapter.enable();
+		}
 
 		BtSockets = new HashMap<String, BluetoothSocket>();
 
@@ -101,7 +104,6 @@ public class Connection {
 		Uuids.add(UUID.fromString("503c7434-bc23-11de-8a39-0800200c9a66"));
 		Uuids.add(UUID.fromString("503c7435-bc23-11de-8a39-0800200c9a66"));
 
-		
 		// Registration for Bluetooth Events.
 		IntentFilter i = new IntentFilter();
 		i.addAction(BluetoothDevice.ACTION_FOUND);
@@ -133,7 +135,6 @@ public class Connection {
 			address = deviceAddress;
 		}
 
-		
 		public void run() {
 			int bufferSize = 1024;
 			byte[] buffer = new byte[bufferSize];
@@ -229,18 +230,18 @@ public class Connection {
 
 	private int connect(String device) throws RemoteException {
 
-		Log.d(TAG,"Trying to connect to: "+device);
-		if(BtDeviceAddresses.contains(device)){
-			Log.d(TAG,"Already connected to: "+device);
+		Log.d(TAG, "Trying to connect to: " + device);
+		if (BtDeviceAddresses.contains(device)) {
+			Log.d(TAG, "Already connected to: " + device);
 			return Connection.SUCCESS;
 		}
-		
+
 		BluetoothDevice myBtServer = BtAdapter.getRemoteDevice(device);
 
 		BluetoothSocket myBSock = null;
-		
-		Log.d(TAG,"Creating Sockets");
-		
+
+		Log.d(TAG, "Creating Sockets");
+
 		for (int i = 0; i < Connection.MAX_CONNECTIONS_SUPPORTED
 				&& myBSock == null; i++) {
 			myBSock = getConnectedSocket(myBtServer, Uuids.get(i));
@@ -272,18 +273,19 @@ public class Connection {
 		BluetoothSocket myBSock;
 		try {
 			myBSock = myBtServer.createRfcommSocketToServiceRecord(uuidToTry);
-			Log.d(TAG,"Trying to connect to socket of:"+myBtServer.getAddress());
+			Log.d(TAG,
+					"Trying to connect to socket of:" + myBtServer.getAddress());
 			myBSock.connect();
 			return myBSock;
 		} catch (IOException e) {
-			Log.i(TAG, "IOException in getConnectedSocket. Msg:"+e.getMessage());
+			Log.i(TAG,
+					"IOException in getConnectedSocket. Msg:" + e.getMessage());
 		}
 		return null;
 	}
 
-	
 	public int broadcastMessage(String message) throws RemoteException {
-		
+
 		connectToFoundDevices();
 		int size = BtDeviceAddresses.size();
 		for (int i = 0; i < size; i++) {
@@ -306,7 +308,7 @@ public class Connection {
 			throws RemoteException {
 
 		int status = connect(destination);
-		
+
 		if (status == Connection.SUCCESS) {
 			try {
 				BluetoothSocket myBsock = BtSockets.get(destination);
@@ -326,7 +328,6 @@ public class Connection {
 		return Connection.FAILURE;
 	}
 
-	
 	public void shutdown(String srcApp) throws RemoteException {
 		try {
 			int size = BtDeviceAddresses.size();
@@ -361,7 +362,7 @@ public class Connection {
 		for (BluetoothDevice device : devices) {
 			BtBondedDevices.put(device.getAddress(), device.getName());
 		}
-		if(BtAdapter.isDiscovering()){
+		if (BtAdapter.isDiscovering()) {
 			BtAdapter.cancelDiscovery();
 		}
 		Log.d(TAG, "Starting Discovery !!");
@@ -369,8 +370,8 @@ public class Connection {
 		return BtBondedDevices;
 	}
 
-	public void connectToFoundDevices(){
-		Log.d(TAG,"connectToFoundDevices() called");
+	public void connectToFoundDevices() {
+		Log.d(TAG, "connectToFoundDevices() called");
 		Iterator devices = BtFoundDevices.entrySet().iterator();
 		while (devices.hasNext()) {
 			Map.Entry<String, String> device = (Map.Entry<String, String>) devices
@@ -378,11 +379,11 @@ public class Connection {
 			try {
 				connect(device.getKey());
 			} catch (RemoteException e) {
-				Log.d(TAG,"Couldn't connect to "+device.getKey());
+				Log.d(TAG, "Couldn't connect to " + device.getKey());
 			}
 		}
 	}
-	
+
 	// The BroadcastReceiver that listens for discovered devices and
 	// changes the title when discovery is finished
 	private final BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -393,15 +394,15 @@ public class Connection {
 			// When discovery finds a device
 			if (BluetoothDevice.ACTION_FOUND.equals(action)) {
 				// Get the BluetoothDevice object from the Intent
-				BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+				BluetoothDevice device = intent
+						.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 				// If it's already paired, skip it, because it's been listed
 				// already
 				BtFoundDevices.put(device.getAddress(), device.getName());
-				Log.d(TAG,"Found "+device.getAddress());
+				Log.d(TAG, "Found " + device.getAddress());
 				// When discovery is finished, change the Activity title
 			} else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED
 					.equals(action)) {
-				
 
 			}
 		}

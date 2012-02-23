@@ -51,9 +51,11 @@ public class UI extends TabActivity {
 
 		tabHost.setCurrentTab(0);
 		
+		
+		/*****TESTING*****/  
 		// the rest for just testing purpose
 		String address = BluetoothAdapter.getDefaultAdapter().getAddress();//((BluetoothManagerApplication)getApplication()).getSelfAddress();
-		Toast.makeText(this, address, Toast.LENGTH_SHORT).show();
+		//Toast.makeText(this, address, Toast.LENGTH_SHORT).show();
 		if (address.equals("F4:9F:54:58:11:6A")) {
 			Toast.makeText(this, "Sending msg after 5 secs awrsd", Toast.LENGTH_SHORT)
 					.show();

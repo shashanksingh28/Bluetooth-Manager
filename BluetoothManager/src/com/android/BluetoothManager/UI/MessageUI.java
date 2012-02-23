@@ -1,7 +1,6 @@
 package com.android.BluetoothManager.UI;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -13,7 +12,7 @@ public class MessageUI extends Activity {
 
 	Button msg_send;
 	EditText msg_input;
-	int GET_DEVICE = 0;
+	int GET_DEVICE_FOR_MSG = 0;
 	
 	
 	@Override
@@ -25,12 +24,12 @@ public class MessageUI extends Activity {
 	}
 
 	public void sendMsg(View v){
-		startActivityForResult(new Intent(this,DeviceListActivity.class), GET_DEVICE);
+		startActivityForResult(new Intent(this,DeviceListActivity.class), GET_DEVICE_FOR_MSG);
 	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if(requestCode == GET_DEVICE && resultCode == RESULT_OK){
+		if(requestCode == GET_DEVICE_FOR_MSG && resultCode == RESULT_OK){
 			String device = data.getStringExtra(DeviceListActivity.DEVICE_ADDRESS);
 			Toast.makeText(this, device, Toast.LENGTH_SHORT).show();
 			Intent intent=new Intent();
