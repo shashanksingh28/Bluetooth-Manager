@@ -2,6 +2,9 @@ package com.android.BluetoothManager.Routing;
 
 import java.util.Iterator;
 
+import com.android.BluetoothManager.Routing.Packet_types.DataPacket;
+import com.android.BluetoothManager.Routing.Packet_types.Route_Message;
+
 import android.util.Log;
 
 public class PacketHandlerService implements Runnable{
@@ -51,15 +54,47 @@ public class PacketHandlerService implements Runnable{
 		}
 	}
 	
+	/* This function will take UIPacket from queue. If it is very old, delete it from queue.
+	 * Check searching flag. If false, check if route exists. If yes send it and remove from Queue.
+	 * If no, broadcast an RREQ and set searching flag as true. 
+	 */
 	void processUIPacket(UIPacket ui_packet)
 	{
-		if((System.currentTimeMillis()-ui_packet.getTimestamp())>15000)
+		if((System.currentTimeMillis()-ui_packet.getTimestamp())>15)
 		{
-			
+			RoutingPacketReceiver.objectsFromUI.remove(ui_packet);
+			//TODO notify UI could not send
+		}
+		else
+		{
+			Route gotRoute=RouteTable.bluetooth_manager.route_table.
+					getRouteToDest(ui_packet.getDeviceToSend());
+			if(gotRoute!=null)
+			{
+				DataPacket data_packet= new DataPacket(ui_packet.getDeviceToSend(),ui_packet.getMsg());
+				RoutingPacketReceiver.objectsFromUI.remove(ui_packet);
+				
+			}
+			else
+			{
+				if(ui_packet.isSearching())
+				{
+					//Wait, still searching
+				}
+				else
+				{
+					Route_Message rreq= new Route_Message(RREQ, RouteTable.getSequenceNumber(), 
+							RouteTable.bluetooth_manager.getSelfAddress(), ui_packet.getDeviceToSend(), 1);
+					RouteTable.bluetooth_manager.route_table.broadcastRREQ(rreq);
+				}
+			}
 		}
 	}
 	
 	
+	/* This function takes a radio packet; checks its type, and then calls the respective
+	 * parser function, which will parse the message and call RouteTable object to process it
+	 */
 	void processRadioPacket(RadioPacket radio_packet)
 	{
 		String device=radio_packet.getDeviceFrom();
@@ -92,8 +127,8 @@ public class PacketHandlerService implements Runnable{
 	}
 	
 	//Function which will return the type message(packet) which is passed to it
-		int getType(String msg) {
-			return Integer.parseInt(msg.charAt(0) + "");
-		}
+	int getType(String msg) {
+		return Integer.parseInt(msg.charAt(0) + "");
+	}
 
 }

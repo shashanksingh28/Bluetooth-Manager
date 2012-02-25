@@ -25,13 +25,13 @@ public class BluetoothManagerApplication extends Application {
 
 	private static final String TAG = "BluetoothManagerApplication";
 
-	// Packet Reciever object
+	// Packet receiver for routing layer
 	RoutingPacketReceiver packet_receiver;
 
-	// Receiver for UI packets.
+	// Packet receiver for UI layer
 	UIPacketReceiver ui_packet_receiver;
 	
-	// Receiver for packets to be send across the Radio layer.
+	// Packet receiver for radio layer
 	RadioPacketReceiver radio_packet_receiver;
 
 	public BluetoothManagerService bluetooth_manager_service;

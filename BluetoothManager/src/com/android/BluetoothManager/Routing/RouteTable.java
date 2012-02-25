@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.android.BluetoothManager.Application.BluetoothManagerApplication;
+import com.android.BluetoothManager.Routing.Packet_types.DataPacket;
 import com.android.BluetoothManager.Routing.Packet_types.Route_Error;
 import com.android.BluetoothManager.Routing.Packet_types.Route_Message;
 import com.android.BluetoothManager.UI.R;
@@ -157,28 +158,28 @@ public class RouteTable {
 		
 	}
 	
-	public int processData(String device, String dest_addr, String data) {
+	public int processData(String device, DataPacket data_packet) {
 		/* First check if self is destination. If yes, pass on the data as an intent to UI
 		 * If no, check if route exists. If yes, then forward to next hop
 		 * If no, generate an RERR and send it to all routes present
 		 */
 		
-		if (isDestination(dest_addr)) {
+		if (isDestination(data_packet.getDest_addr())) {
 			String ACTION = bluetooth_manager.getResources().getString(
 					R.string.ROUTING_TO_UI);
 			Intent i = new Intent();
 			i.putExtra("device", device);
-			i.putExtra("msg", data);
+			i.putExtra("msg", data_packet.getMsg());
 			i.setAction(ACTION);
 			bluetooth_manager.sendBroadcast(i);
 		} else {
-			Route isPresent = getRouteToDest(dest_addr);
+			Route isPresent = getRouteToDest(data_packet.getDest_addr());
 			if (isPresent != null) {
-				forwardMessage(isPresent.getNext_hop(), data);
+				forwardMessage(isPresent.getNext_hop(),data_packet.getMsg());
 			} 
 			else 
 			{
-				Route_Error rerr=new Route_Error(PacketHandlerService.RERR,getSequenceNumber(),dest_addr);
+				Route_Error rerr=new Route_Error(PacketHandlerService.RERR,getSequenceNumber(),data_packet.getDest_addr());
 				LinkedHashSet<String> nextHops=this.getAllNextHops();
 				Iterator<String> itr=nextHops.iterator();
 				while(itr.hasNext())

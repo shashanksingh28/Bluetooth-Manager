@@ -2,6 +2,7 @@ package com.android.BluetoothManager.Routing;
 
 import android.util.Log;
 
+import com.android.BluetoothManager.Routing.Packet_types.DataPacket;
 import com.android.BluetoothManager.Routing.Packet_types.Route_Error;
 import com.android.BluetoothManager.Routing.Packet_types.Route_Message;
 
@@ -56,7 +57,8 @@ public class PacketParser {
 		String packet_fields[] = msg.split(",");
 		String dest_addr=packet_fields[1];
 		String data=packet_fields[2];
-		return RouteTable.bluetooth_manager.route_table.processData(device, dest_addr, data);
+		DataPacket data_packet= new DataPacket(dest_addr, data);
+		return RouteTable.bluetooth_manager.route_table.processData(device, data_packet);
 	}
 
 }
