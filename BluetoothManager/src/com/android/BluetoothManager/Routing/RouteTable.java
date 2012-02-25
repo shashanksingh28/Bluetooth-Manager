@@ -16,13 +16,14 @@ public class RouteTable {
 
 	final static String TAG = "RouteTable";
 
-	public BluetoothManagerApplication bluetooth_manager;
+	//Static for the whole routing package to use this context
+	public static BluetoothManagerApplication bluetooth_manager;
 
 	// Static routing table, initialize on application start
 	ArrayList<Route> table;
 
 	public RouteTable(BluetoothManagerApplication bluetooth_manager) {
-		this.bluetooth_manager = bluetooth_manager;
+		RouteTable.bluetooth_manager = bluetooth_manager;
 		if (table == null) {
 			table = new ArrayList<Route>();
 		}
@@ -77,7 +78,7 @@ public class RouteTable {
 		}
 
 		if (isDestination(rreq.getDest_addr())) {
-			Route_Message rrep = new Route_Message(PacketHandler.RREP,
+			Route_Message rrep = new Route_Message(PacketHandlerService.RREP,
 					getSequenceNumber(), bluetooth_manager.getSelfAddress(),
 					rreq.getOriginator_addr(), 1);
 			unicastRREP(device, rrep);
@@ -177,7 +178,7 @@ public class RouteTable {
 			} 
 			else 
 			{
-				Route_Error rerr=new Route_Error(PacketHandler.RERR,getSequenceNumber(),dest_addr);
+				Route_Error rerr=new Route_Error(PacketHandlerService.RERR,getSequenceNumber(),dest_addr);
 				LinkedHashSet<String> nextHops=this.getAllNextHops();
 				Iterator<String> itr=nextHops.iterator();
 				while(itr.hasNext())

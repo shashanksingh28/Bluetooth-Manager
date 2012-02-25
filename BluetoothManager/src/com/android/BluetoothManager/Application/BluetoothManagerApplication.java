@@ -11,8 +11,7 @@ import android.util.Log;
 import com.android.BluetoothManager.Radio.BluetoothManagerService;
 import com.android.BluetoothManager.Radio.Connection;
 import com.android.BluetoothManager.Radio.RadioPacketReceiver;
-import com.android.BluetoothManager.Routing.PacketHandler;
-import com.android.BluetoothManager.Routing.PacketHandlerHelper;
+import com.android.BluetoothManager.Routing.RoutingPacketReceiver;
 import com.android.BluetoothManager.Routing.RouteTable;
 import com.android.BluetoothManager.UI.R;
 import com.android.BluetoothManager.UI.UIPacketReceiver;
@@ -27,7 +26,7 @@ public class BluetoothManagerApplication extends Application {
 	private static final String TAG = "BluetoothManagerApplication";
 
 	// Packet Reciever object
-	PacketHandler packet_receiver;
+	RoutingPacketReceiver packet_receiver;
 
 	// Receiver for UI packets.
 	UIPacketReceiver ui_packet_receiver;
@@ -40,8 +39,6 @@ public class BluetoothManagerApplication extends Application {
 	public Connection connection;
 
 	public RouteTable route_table;
-
-	public PacketHandlerHelper packet_handler_helper;
 
 	@Override
 	public void onCreate() {
@@ -59,7 +56,7 @@ public class BluetoothManagerApplication extends Application {
 		// Here starts the registration of the listeners for intents.
 
 		// Instantiate the PacketReciever and registering it to listen
-		packet_receiver = new PacketHandler(this);
+		packet_receiver = new RoutingPacketReceiver(this);
 		IntentFilter r = new IntentFilter();
 		r.addAction(UI_TO_ROUTING);
 		r.addAction(RADIO_TO_ROUTING);
@@ -81,9 +78,6 @@ public class BluetoothManagerApplication extends Application {
 		
 		// initialize the route table on startup
 		route_table = new RouteTable(this);
-
-		// initialize the packet helper
-		packet_handler_helper = new PacketHandlerHelper(this);
 
 		startService(new Intent(this, BluetoothManagerService.class));
 	}
