@@ -17,4 +17,5 @@
 	<string name="RADIO_TO_ROUTING">com.android.BluetoothManager.RADIO_TO_ROUTING</string>
 	<string name="ROUTING_TO_RADIO">com.android.BluetoothManager.ROUTING_TO_RADIO</string>
 	<string name="ROUTING_TO_UI">com.android.BluetoothManager.ROUTING_TO_UI</string>
+	<string name="string_start_chat">New Chat</string>
 </resources>

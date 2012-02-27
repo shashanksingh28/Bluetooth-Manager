@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -16,7 +15,7 @@ import android.widget.TextView;
 
 import com.android.BluetoothManager.Application.BluetoothManagerApplication;
 
-public class DeviceListActivity extends Activity implements OnItemClickListener {
+public class DeviceListActivity extends BaseActivity implements OnItemClickListener {
 	private static final String TAG = "DeviceListActivity";
 
 	ListView lv;

@@ -1,13 +1,12 @@
 package com.android.BluetoothManager.UI;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 
 import com.android.BluetoothManager.Application.BluetoothManagerApplication;
 import com.android.BluetoothManager.UI.viewpager.TitlePageIndicator;
 
-public class ChatUI extends Activity {
+public class ChatUI extends BaseActivity {
 
 	ViewPagerAdapter adapter;
 	ViewPager pager;
@@ -22,9 +21,10 @@ public class ChatUI extends Activity {
 		adapter = bluetooth_manager.ui_packet_receiver.adapter;
 		indicator = (TitlePageIndicator) findViewById(R.id.indicator);
 		pager = (ViewPager) findViewById(R.id.viewpager);
-		bluetooth_manager.ui_packet_receiver.adapter.context = this;
 		pager.setAdapter(adapter);
 		indicator.setViewPager(pager);
+		//
+		// adapter.addNewView(pager,null);
 		adapter.notifyDataSetChanged();
 		indicator.notifyDataSetChanged();
 	}

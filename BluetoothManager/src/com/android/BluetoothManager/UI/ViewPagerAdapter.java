@@ -60,7 +60,6 @@ public class ViewPagerAdapter extends PagerAdapter implements TitleProvider {
 	public void addDevice(String device, String name, String msg) {
 
 		ListView v = new ListView(context);
-
 		deviceNames.add(name);
 		listViews.add(v);
 

@@ -1,6 +1,5 @@
 package com.android.BluetoothManager.UI;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -8,7 +7,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-public class MessageUI extends Activity {
+public class MessageUI extends BaseActivity {
 
 	Button msg_send;
 	EditText msg_input;
@@ -36,7 +35,7 @@ public class MessageUI extends Activity {
 			intent.setAction(getResources().getString(R.string.UI_TO_ROUTING));
 			intent.putExtra("layer", "UI");
 			intent.putExtra("device", device);
-			intent.putExtra("msg", "Hello RREQ");
+			intent.putExtra("msg", "msg,Hello RREQ");
 			sendBroadcast(intent);
 		}
 		

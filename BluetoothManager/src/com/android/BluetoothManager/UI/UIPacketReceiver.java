@@ -2,6 +2,7 @@ package com.android.BluetoothManager.UI;
 
 import java.util.HashMap;
 
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -81,10 +82,10 @@ public class UIPacketReceiver extends BroadcastReceiver {
 
 	public void setNotification(String ticker, String title, String text) {
 
-		// int icon = R.drawable.ic_menu_dialog;
-		// long when = System.currentTimeMillis();
-		// Notification notification = new Notification(icon, ticker, when);
-		// Context context = bluetooth_manager.getApplicationContext();
+		 int icon = R.drawable.ic_menu_dialog;
+		 long when = System.currentTimeMillis();
+		 Notification notification = new Notification(icon, ticker, when);
+		 Context context = bluetooth_manager.getApplicationContext();
 		// Intent notificationIntent = new
 		// Intent(this,NotificationsActivity.class);
 		// PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
