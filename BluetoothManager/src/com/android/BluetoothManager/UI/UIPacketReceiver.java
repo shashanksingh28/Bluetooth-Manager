@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -20,6 +21,8 @@ public class UIPacketReceiver extends BroadcastReceiver {
 
 	private String MSG_TYPE = "msg";
 	private String CHAT_TYPE = "chat";
+
+	private int NOTIFICATION_ID = 1;
 
 	// Members related to ChatUI
 	public ViewPagerAdapter adapter;
@@ -77,22 +80,24 @@ public class UIPacketReceiver extends BroadcastReceiver {
 	}
 
 	private void processMsgData(String device, String name, String msg) {
-
+		setNotification("New message from: " + name, name, msg);
 	}
 
 	public void setNotification(String ticker, String title, String text) {
 
-		 int icon = R.drawable.ic_menu_dialog;
-		 long when = System.currentTimeMillis();
-		 Notification notification = new Notification(icon, ticker, when);
-		 Context context = bluetooth_manager.getApplicationContext();
-		// Intent notificationIntent = new
-		// Intent(this,NotificationsActivity.class);
-		// PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
-		// notificationIntent, 0);
-		//
-		// notification.setLatestEventInfo(context, title, text, contentIntent);
-		// notification_service.notify(1, notification);
+		int icon = R.drawable.ic_menu_dialog;
+		long when = System.currentTimeMillis();
+		Notification notification = new Notification(icon, ticker, when);
+		Context context = bluetooth_manager.getApplicationContext();
+		Intent notificationIntent = new Intent(Intent.ACTION_MAIN);
+		notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+				| Intent.FLAG_ACTIVITY_SINGLE_TOP
+				| Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		notificationIntent.setType("vnd.android-dir/mms-sms");
+		PendingIntent contentIntent = PendingIntent.getActivity(context, 0,
+				notificationIntent, 0);
+		notification.setLatestEventInfo(context, title, text, contentIntent);
+		notification_service.notify(NOTIFICATION_ID, notification);
 
 	}
 }

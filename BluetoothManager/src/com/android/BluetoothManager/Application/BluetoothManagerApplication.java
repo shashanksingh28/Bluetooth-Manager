@@ -78,7 +78,7 @@ public class BluetoothManagerApplication extends Application {
 		// initialize the route table on startup
 		route_table = new RouteTable(this);
 
-		startService(new Intent(this, BluetoothManagerService.class));
+		//startService(new Intent(this, BluetoothManagerService.class));
 
 		// Testing UI via Stubs
 		Thread ui_stub = new Thread(new UIStub());
@@ -105,7 +105,7 @@ public class BluetoothManagerApplication extends Application {
 		return connection.getConnectableDevices();
 	}
 
-	// This class id SOLELY for testing Chat UI
+	// This class iS SOLELY for testing Chat UI
 	private class UIStub implements Runnable {
 
 		@Override
@@ -125,7 +125,7 @@ public class BluetoothManagerApplication extends Application {
 			pause(5);
 			mSendIntent("123", "aru", "chat,hello hi :D");
 			pause(10000);
-			mSendIntent("123", "aru", "chat,Last Msg :D");
+			mSendIntent("888", "God", "chat,This is God !");
 		}
 
 		public void pause(int seconds) {

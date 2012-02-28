@@ -23,8 +23,6 @@ public class ChatUI extends BaseActivity {
 		pager = (ViewPager) findViewById(R.id.viewpager);
 		pager.setAdapter(adapter);
 		indicator.setViewPager(pager);
-		//
-		// adapter.addNewView(pager,null);
 		adapter.notifyDataSetChanged();
 		indicator.notifyDataSetChanged();
 	}
