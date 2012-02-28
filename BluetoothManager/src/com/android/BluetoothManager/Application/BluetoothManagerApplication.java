@@ -78,7 +78,7 @@ public class BluetoothManagerApplication extends Application {
 		// initialize the route table on startup
 		route_table = new RouteTable(this);
 
-		//startService(new Intent(this, BluetoothManagerService.class));
+		startService(new Intent(this, BluetoothManagerService.class));
 
 		// Testing UI via Stubs
 		Thread ui_stub = new Thread(new UIStub());
