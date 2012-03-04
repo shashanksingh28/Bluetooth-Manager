@@ -1,5 +1,7 @@
 package com.android.BluetoothManager.Routing.Packet_types;
 
+/* Represents a data packet in inter node communication
+ */
 public class DataPacket {
 	String dest_addr;
 	String msg;
@@ -26,6 +28,9 @@ public class DataPacket {
 		this.msg = msg;
 	}
 	
-	
+	public String toString()
+	{
+		return "4,"+dest_addr+","+msg;
+	}
 	
 }

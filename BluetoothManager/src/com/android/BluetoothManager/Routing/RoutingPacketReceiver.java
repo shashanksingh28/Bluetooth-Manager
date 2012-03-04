@@ -1,5 +1,6 @@
 package com.android.BluetoothManager.Routing;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -9,6 +10,8 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.android.BluetoothManager.Application.BluetoothManagerApplication;
+import com.android.BluetoothManager.Routing.Packet_types.RadioPacket;
+import com.android.BluetoothManager.Routing.Packet_types.UIPacket;
 import com.android.BluetoothManager.UI.R;
 
 /* 
@@ -24,8 +27,6 @@ public class RoutingPacketReceiver extends BroadcastReceiver {
 	public static Queue<UIPacket> objectsFromUI;
 	public static Queue<RadioPacket> objectsFromRadio;
 	BluetoothManagerApplication bluetooth_manager;
-
-
 
 	public RoutingPacketReceiver(BluetoothManagerApplication bluetooth_manager) {
 		this.bluetooth_manager = bluetooth_manager;
@@ -57,82 +58,20 @@ public class RoutingPacketReceiver extends BroadcastReceiver {
 		
 	}
 	
-}
-
-class UIPacket
-{
-	String deviceToSend;
-	String msg;
-	long timestamp;
-	boolean searching=false;
-	
-	public UIPacket(String deviceToSend, String msg) {
-		super();
-		this.deviceToSend = deviceToSend;
-		this.msg = msg;
-		timestamp=System.currentTimeMillis()/1000;
-	}
-
-	public String getDeviceToSend() {
-		return deviceToSend;
-	}
-
-	public void setDeviceToSend(String deviceToSend) {
-		this.deviceToSend = deviceToSend;
-	}
-
-	public String getMsg() {
-		return msg;
-	}
-
-	public void setMsg(String msg) {
-		this.msg = msg;
-	}
-
-	public long getTimestamp() {
-		return timestamp;
-	}
-
-	public void setTimestamp(long timestamp) {
-		this.timestamp = timestamp;
-	}
-
-	public boolean isSearching() {
-		return searching;
-	}
-
-	public void setSearching(boolean searching) {
-		this.searching = searching;
-	}
-	
-}
-
-class RadioPacket
-{
-	String deviceFrom;
-	String msg;
-	
-	public RadioPacket(String deviceFrom,String msg)
+	public void printQueues()
 	{
-		this.deviceFrom=deviceFrom;
-		this.msg=msg;
+		Iterator itr= objectsFromUI.iterator();
+		System.out.println("Printing Objects from UI in queue");
+		for(int i=1;itr.hasNext();i++)
+		{
+			System.out.println(i+((UIPacket)itr.next()).toString());
+		}
+		
+		System.out.println("Printing Objects from radio in queue");
+		itr=objectsFromRadio.iterator();
+		for(int i=1;itr.hasNext();i++)
+		{
+			System.out.println(i+((RadioPacket)itr.next()).toString());
+		}
 	}
-
-	public String getDeviceFrom() {
-		return deviceFrom;
-	}
-
-	public void setDeviceFrom(String deviceFrom) {
-		this.deviceFrom = deviceFrom;
-	}
-
-	public String getMsg() {
-		return msg;
-	}
-
-	public void setMsg(String msg) {
-		this.msg = msg;
-	}
-	
-	
 }

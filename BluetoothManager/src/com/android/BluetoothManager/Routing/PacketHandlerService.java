@@ -1,11 +1,12 @@
 package com.android.BluetoothManager.Routing;
 
 import java.util.Iterator;
+import android.util.Log;
 
 import com.android.BluetoothManager.Routing.Packet_types.DataPacket;
+import com.android.BluetoothManager.Routing.Packet_types.RadioPacket;
 import com.android.BluetoothManager.Routing.Packet_types.Route_Message;
-
-import android.util.Log;
+import com.android.BluetoothManager.Routing.Packet_types.UIPacket;
 
 public class PacketHandlerService implements Runnable{
 
@@ -73,19 +74,23 @@ public class PacketHandlerService implements Runnable{
 			{
 				DataPacket data_packet= new DataPacket(ui_packet.getDeviceToSend(),ui_packet.getMsg());
 				RoutingPacketReceiver.objectsFromUI.remove(ui_packet);
-				
+				RouteTable.bluetooth_manager.route_table.forwardMessage(ui_packet.getDeviceToSend(),
+						data_packet.toString());
+				Log.d(TAG,"Route found, sending message to "+ui_packet.getDeviceToSend());
+				RoutingPacketReceiver.objectsFromUI.remove(ui_packet);
 			}
 			else
 			{
 				if(ui_packet.isSearching())
 				{
-					//Wait, still searching
-				}
+					Log.d(TAG,"Searching Route for "+ui_packet.getDeviceToSend());				}
 				else
 				{
 					Route_Message rreq= new Route_Message(RREQ, RouteTable.getSequenceNumber(), 
 							RouteTable.bluetooth_manager.getSelfAddress(), ui_packet.getDeviceToSend(), 1);
+					Log.d(TAG,"Route not found, broadcasting RREQ for "+ui_packet.getDeviceToSend());
 					RouteTable.bluetooth_manager.route_table.broadcastRREQ(rreq);
+					ui_packet.setSearching(true);
 				}
 			}
 		}
@@ -100,24 +105,25 @@ public class PacketHandlerService implements Runnable{
 		String device=radio_packet.getDeviceFrom();
 		String msg =radio_packet.getMsg();
 		
-		int type=getType(msg);
+		int type=getRadioPacketType(msg);
 		switch (type) {
 		case RREQ:
-			Log.d(TAG,"RREQ received by routing. Now processing.");
+			Log.d(TAG,"RREQ packet");
 			PacketParser.parseRREQ(device, msg);
-
 			break;
 
 		case RREP:
-			Log.d(TAG,"RREP received by routing. Now processing.");
+			Log.d(TAG,"RREP packet");
 			PacketParser.parseRREP(device, msg);
 			break;
 
 		case RERR:
+			Log.d(TAG,"RERR packet");
 			PacketParser.parseRERR(device, msg);
 			break;
 
 		case DATA:
+			Log.d(TAG,"Data packet");
 			PacketParser.parseData(device, msg);
 			break;
 
@@ -127,7 +133,7 @@ public class PacketHandlerService implements Runnable{
 	}
 	
 	//Function which will return the type message(packet) which is passed to it
-	int getType(String msg) {
+	int getRadioPacketType(String msg) {
 		return Integer.parseInt(msg.charAt(0) + "");
 	}
 
