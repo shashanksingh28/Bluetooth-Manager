@@ -1,13 +1,10 @@
 package com.android.BluetoothManager.UI;
 
 import android.app.TabActivity;
-import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.TabHost;
-import android.widget.Toast;
 
 public class UI extends TabActivity {
 
@@ -54,30 +51,30 @@ public class UI extends TabActivity {
 		
 		/*****TESTING*****/  
 		// the rest for just testing purpose
-		String address = BluetoothAdapter.getDefaultAdapter().getAddress();//((BluetoothManagerApplication)getApplication()).getSelfAddress();
-		//Toast.makeText(this, address, Toast.LENGTH_SHORT).show();
-		if (address.equals("F4:9F:54:58:11:6A")) {
-			Toast.makeText(this, "Sending msg after 5 secs awrsd", Toast.LENGTH_SHORT)
-					.show();
-			try {
-				Thread.sleep(5000);
-			} catch (InterruptedException e) {
-				Log.d(TAG, "++ Sleep Interrupted ++");
-			}
+//		String address = BluetoothAdapter.getDefaultAdapter().getAddress();//((BluetoothManagerApplication)getApplication()).getSelfAddress();
+//		Toast.makeText(this, address, Toast.LENGTH_SHORT).show();
+//		if (address.equals("F4:9F:54:58:11:6A")) {
+//			Toast.makeText(this, "Sending msg after 5 secs awrsd", Toast.LENGTH_SHORT)
+//					.show();
+//			try {
+//				Thread.sleep(5000);
+//			} catch (InterruptedException e) {
+//				Log.d(TAG, "++ Sleep Interrupted ++");
+//			}
 
 			
 			// Temporarily sending fake data:
-			String destination = "7C:61:93:B7:54:CD";// data.getStringExtra(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
-			String ACTION = getResources().getString(R.string.UI_TO_ROUTING);
-			Intent i = new Intent();
-			i.setAction(ACTION);
-			i.putExtra("layer", "UI");
-			i.putExtra("type", "singlehop"); // to skip routing while testing
-												// the radio layer.
-			i.putExtra("device", destination);
-			i.putExtra("msg", "4,7C:61:93:B7:54:CD,This is a test msg !!");
-			sendBroadcast(i);
-		}
+//			String destination = "7C:61:93:B7:54:CD";// data.getStringExtra(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
+//			String ACTION = getResources().getString(R.string.UI_TO_ROUTING);
+//			Intent i = new Intent();
+//			i.setAction(ACTION);
+//			i.putExtra("layer", "UI");
+//			i.putExtra("type", "singlehop"); // to skip routing while testing
+//												// the radio layer.
+//			i.putExtra("device", destination);
+//			i.putExtra("msg", "4,7C:61:93:B7:54:CD,This is a test msg !!");
+//			sendBroadcast(i);
+//		}
 
 		// startActivityForResult(new Intent(this,DeviceListActivity.class),
 		// DEVICE_LIST_ACTIVITY);

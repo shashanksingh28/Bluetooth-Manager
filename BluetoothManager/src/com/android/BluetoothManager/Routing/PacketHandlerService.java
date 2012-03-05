@@ -52,7 +52,7 @@ public class PacketHandlerService implements Runnable{
 					this.processRadioPacket(temp_radio);
 				}
 				
-				Thread.sleep(10000);
+				Thread.sleep(2000);
 			}
 		}
 		catch(Exception e)
@@ -81,7 +81,7 @@ public class PacketHandlerService implements Runnable{
 				DataPacket data_packet= new DataPacket(ui_packet.getDeviceToSend(),ui_packet.getMsg());
 				RouteTable.bluetooth_manager.route_table.forwardMessage(gotRoute.getNext_hop() ,
 						data_packet.toString());
-				Log.d(TAG,"Route found, sending message to "+gotRoute.getNext_hop());
+				Log.d(TAG,"Route found, sending message:"+ data_packet.toString() +" to "+gotRoute.getNext_hop());
 				RoutingPacketReceiver.objectsFromUI.remove(ui_packet);
 			}
 			else

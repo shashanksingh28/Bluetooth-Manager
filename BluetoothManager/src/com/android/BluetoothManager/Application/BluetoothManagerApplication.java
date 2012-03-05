@@ -29,7 +29,7 @@ public class BluetoothManagerApplication extends Application {
 
 	// Packet receiver for routing layer
 	RoutingPacketReceiver packet_receiver;
-	
+
 	PacketHandlerService routing_thread;
 
 	// Packet receiver for UI layer
@@ -80,10 +80,10 @@ public class BluetoothManagerApplication extends Application {
 
 		// initialize the route table on startup
 		route_table = new RouteTable(this);
-		
-		routing_thread=new PacketHandlerService();
+
+		routing_thread = new PacketHandlerService();
 		new Thread(routing_thread).start();
-		Log.d(TAG,"Routing Thread Started !");
+		Log.d(TAG, "Routing Thread Started !");
 		startService(new Intent(this, BluetoothManagerService.class));
 
 		// Testing UI via Stubs
@@ -153,5 +153,16 @@ public class BluetoothManagerApplication extends Application {
 			sendBroadcast(i);
 		}
 
+	}
+
+	public void sendDataToRoutingFromUI(String device, String msg) {
+		
+		Intent intent = new Intent();
+		intent.setAction(getResources().getString(R.string.UI_TO_ROUTING));
+		intent.putExtra("device", device);
+		intent.putExtra("msg", "msg,Hello RREQ");
+		Log.d(TAG,"Sending msg from UI to Routing:"+msg);
+		sendBroadcast(intent);
+		
 	}
 }

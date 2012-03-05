@@ -162,7 +162,7 @@ public class Connection {
 						// marker
 
 						// Intent to be changed in future.
-						Log.d(TAG,"Received "+message+" from "+address);
+						Log.d(TAG,"Received "+message+" from "+address+"In Connection");
 						String ACTION = app_context.getResources().getString(
 								R.string.RADIO_TO_ROUTING);
 						Intent i = new Intent();

@@ -166,6 +166,7 @@ public class RouteTable {
 			i.putExtra("device", device);
 			i.putExtra("msg", data_packet.getMsg());
 			i.setAction(ACTION);
+			Log.d(TAG,"Received msg:"+data_packet.getMsg()+"from: "+device);
 			bluetooth_manager.sendBroadcast(i);
 		} else {
 			Route isPresent = getRouteToDest(data_packet.getDest_addr());

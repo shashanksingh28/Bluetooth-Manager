@@ -50,17 +50,10 @@ public class MessageUI extends BaseActivity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if(requestCode == GET_DEVICE_FOR_MSG && resultCode == RESULT_OK){
 			String device = data.getStringExtra(DeviceListActivity.DEVICE_ADDRESS);
-			String msg = msg_input.getText().toString();
+			String msg = "msg,"+msg_input.getText().toString();
 			Toast.makeText(this, device, Toast.LENGTH_SHORT).show();
+			bluetooth_manager.sendDataToRoutingFromUI(device, msg);
 			
-			
-			
-			Intent intent=new Intent();
-			intent.setAction(getResources().getString(R.string.UI_TO_ROUTING));
-			intent.putExtra("layer", "UI");
-			intent.putExtra("device", device);
-			intent.putExtra("msg", "msg,Hello RREQ");
-			sendBroadcast(intent);
 		}
 		
 	}
