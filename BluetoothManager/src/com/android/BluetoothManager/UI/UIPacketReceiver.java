@@ -53,6 +53,7 @@ public class UIPacketReceiver extends BroadcastReceiver {
 		String msg = intent.getStringExtra("msg");
 
 		Log.d(TAG, "Received msg:" + msg + " from:" + device);
+		
 		String dataType = msg.substring(0, msg.indexOf(","));
 
 		if (dataType.equals(MSG_TYPE)) {

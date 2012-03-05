@@ -23,6 +23,9 @@ public class PacketHandlerService implements Runnable{
 	 */
 	@Override
 	public void run() {
+		
+		Log.d(TAG,"Packet Handler Service Started !!");
+		
 		Iterator<UIPacket> itr_UI;
 		Iterator<RadioPacket> itr_radio;
 		
@@ -30,9 +33,11 @@ public class PacketHandlerService implements Runnable{
 		RadioPacket temp_radio;
 		try
 		{
+			Log.d(TAG,"Looping through the iterators");
 			while(true)
 			{
 				itr_UI=RoutingPacketReceiver.objectsFromUI.iterator();
+				RoutingPacketReceiver.printQueues();
 				for(;itr_UI.hasNext();)
 				{
 					temp_UI=itr_UI.next();
@@ -40,13 +45,14 @@ public class PacketHandlerService implements Runnable{
 				}
 				
 				itr_radio=RoutingPacketReceiver.objectsFromRadio.iterator();
+				RoutingPacketReceiver.printQueues();
 				for(;itr_radio.hasNext();)
 				{
 					temp_radio=itr_radio.next();
 					this.processRadioPacket(temp_radio);
 				}
 				
-				Thread.sleep(100);
+				Thread.sleep(10000);
 			}
 		}
 		catch(Exception e)
@@ -61,7 +67,7 @@ public class PacketHandlerService implements Runnable{
 	 */
 	void processUIPacket(UIPacket ui_packet)
 	{
-		if((System.currentTimeMillis()-ui_packet.getTimestamp())>60)
+		if(false)//(System.currentTimeMillis()- ui_packet.getTimestamp())>60)
 		{
 			RoutingPacketReceiver.objectsFromUI.remove(ui_packet);
 			//TODO notify UI could not send

@@ -32,14 +32,6 @@ public class RouteTable {
 
 	// check if current device is destination
 	boolean isDestination(String Bluetooth_Addr) {
-		Log.d(TAG,"My BT ADD:"+bluetooth_manager.getSelfAddress());
-		Log.d(TAG,"Received BT ADD:"+Bluetooth_Addr);
-		try {
-			Thread.sleep(10000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		if (bluetooth_manager.getSelfAddress().equals(Bluetooth_Addr)) {
 			return true;
 		} else
@@ -83,6 +75,7 @@ public class RouteTable {
 			Route_Message rrep = new Route_Message(PacketHandlerService.RREP,
 					getSequenceNumber(), bluetooth_manager.getSelfAddress(),
 					rreq.getOriginator_addr(), 1);
+			Log.d(TAG,"Creating RREP for "+rreq.getDest_addr());
 			unicastRREP(device, rrep);
 		} else {
 			rreq.setHop_count(rreq.getHop_count() + 1);
@@ -252,7 +245,6 @@ public class RouteTable {
 		i.putExtra("device", device);
 		i.putExtra("msg", data);
 		bluetooth_manager.sendBroadcast(i);
-
 	}
 
 	void showTable() {

@@ -83,7 +83,7 @@ public class BluetoothManagerApplication extends Application {
 		
 		routing_thread=new PacketHandlerService();
 		new Thread(routing_thread).start();
-		
+		Log.d(TAG,"Routing Thread Started !");
 		startService(new Intent(this, BluetoothManagerService.class));
 
 		// Testing UI via Stubs

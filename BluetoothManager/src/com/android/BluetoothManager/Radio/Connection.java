@@ -71,7 +71,7 @@ public class Connection {
 
 	Context app_context;
 	
-	private long lastDiscovery; // Stores the time of the last discovery
+	private long lastDiscovery=0; // Stores the time of the last discovery
 
 	private boolean isSending = false;
 
@@ -162,6 +162,7 @@ public class Connection {
 						// marker
 
 						// Intent to be changed in future.
+						Log.d(TAG,"Received "+message+" from "+address);
 						String ACTION = app_context.getResources().getString(
 								R.string.RADIO_TO_ROUTING);
 						Intent i = new Intent();
@@ -170,6 +171,8 @@ public class Connection {
 						i.putExtra("device", address);
 						i.putExtra("msg", message);
 						app_context.sendBroadcast(i);
+						Log.d(TAG,"Intent Send from Radio to routing");
+						
 					}
 				}
 			} catch (IOException e) {
@@ -424,7 +427,7 @@ public class Connection {
 				// When discovery is finished, change the Activity title
 			} else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED
 					.equals(action)) {
-
+				Log.d(TAG,"Service Discovery Finished !");
 			}
 		}
 	};

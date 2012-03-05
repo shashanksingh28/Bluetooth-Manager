@@ -22,7 +22,7 @@ import com.android.BluetoothManager.UI.R;
  */
 public class RoutingPacketReceiver extends BroadcastReceiver {
 
-	private static final String TAG = "Routing_PacketReceiver";
+	private static final String TAG = "RoutingPacketReceiver";
 
 	public static Queue<UIPacket> objectsFromUI;
 	public static Queue<RadioPacket> objectsFromRadio;
@@ -46,8 +46,9 @@ public class RoutingPacketReceiver extends BroadcastReceiver {
 		if (intent.getAction().equals(bluetooth_manager.getResources().getString(R.string.UI_TO_ROUTING))) 
 		{
 			UIPacket ui_packet= new UIPacket(device, msg);
-			Log.d(TAG, "Pushing down msg: "+msg+" from "+device +" on queue");
+			Log.d(TAG, "Pushing down msg: "+msg+" to "+device +" on queue");
 			objectsFromUI.add(ui_packet);
+			Log.d(TAG,"Size:"+objectsFromUI.size());
 		}
 		else if(intent.getAction().equals(bluetooth_manager.getResources().getString(R.string.RADIO_TO_ROUTING)))
 		{
@@ -58,20 +59,21 @@ public class RoutingPacketReceiver extends BroadcastReceiver {
 		
 	}
 	
-	public void printQueues()
+	public static void printQueues()
 	{
+		Log.d(TAG,"Size:"+objectsFromUI.size());
 		Iterator itr= objectsFromUI.iterator();
-		System.out.println("Printing Objects from UI in queue");
+		Log.d(TAG,"Printing Objects from UI in queue");
 		for(int i=1;itr.hasNext();i++)
 		{
-			System.out.println(i+((UIPacket)itr.next()).toString());
+			Log.d(TAG,i+((UIPacket)itr.next()).toString());
 		}
 		
-		System.out.println("Printing Objects from radio in queue");
+		Log.d(TAG,"Printing Objects from radio in queue");
 		itr=objectsFromRadio.iterator();
 		for(int i=1;itr.hasNext();i++)
 		{
-			System.out.println(i+((RadioPacket)itr.next()).toString());
+			Log.d(TAG,i+((RadioPacket)itr.next()).toString());
 		}
 	}
 }
