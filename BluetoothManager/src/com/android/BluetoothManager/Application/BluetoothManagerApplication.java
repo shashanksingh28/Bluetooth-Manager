@@ -12,6 +12,7 @@ import android.widget.ArrayAdapter;
 import com.android.BluetoothManager.Radio.BluetoothManagerService;
 import com.android.BluetoothManager.Radio.Connection;
 import com.android.BluetoothManager.Radio.RadioPacketReceiver;
+import com.android.BluetoothManager.Routing.PacketHandlerService;
 import com.android.BluetoothManager.Routing.RoutingPacketReceiver;
 import com.android.BluetoothManager.Routing.RouteTable;
 import com.android.BluetoothManager.UI.R;
@@ -28,6 +29,8 @@ public class BluetoothManagerApplication extends Application {
 
 	// Packet receiver for routing layer
 	RoutingPacketReceiver packet_receiver;
+	
+	PacketHandlerService routing_thread;
 
 	// Packet receiver for UI layer
 	public UIPacketReceiver ui_packet_receiver;
@@ -77,7 +80,10 @@ public class BluetoothManagerApplication extends Application {
 
 		// initialize the route table on startup
 		route_table = new RouteTable(this);
-
+		
+		routing_thread=new PacketHandlerService();
+		new Thread(routing_thread).start();
+		
 		startService(new Intent(this, BluetoothManagerService.class));
 
 		// Testing UI via Stubs

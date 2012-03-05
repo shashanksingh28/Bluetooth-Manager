@@ -70,6 +70,8 @@ public class Connection {
 	Object lock;
 
 	Context app_context;
+	
+	private long lastDiscovery; // Stores the time of the last discovery
 
 	private boolean isSending = false;
 
@@ -286,6 +288,7 @@ public class Connection {
 
 	public int broadcastMessage(String message) throws RemoteException {
 
+		appStartDiscovery();
 		connectToFoundDevices();
 		int size = BtDeviceAddresses.size();
 		for (int i = 0; i < size; i++) {
@@ -366,7 +369,7 @@ public class Connection {
 			BtAdapter.cancelDiscovery();
 		}
 		Log.d(TAG, "Starting Discovery !!");
-		BtAdapter.startDiscovery();
+		appStartDiscovery();
 		return BtBondedDevices;
 	}
 
@@ -380,6 +383,24 @@ public class Connection {
 				connect(device.getKey());
 			} catch (RemoteException e) {
 				Log.d(TAG, "Couldn't connect to " + device.getKey());
+			}
+		}
+	}
+
+	/*
+	 * Discover devices only if the last discovery was made a minute ago.
+	 */
+	public void appStartDiscovery() {
+		if(BtAdapter.isDiscovering()){
+			return;
+		}
+		if(System.currentTimeMillis()/1000 - lastDiscovery > 60){
+			BtAdapter.startDiscovery();
+			lastDiscovery = System.currentTimeMillis()/1000;
+			try {
+				Thread.sleep(12000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
 		}
 	}
@@ -407,4 +428,5 @@ public class Connection {
 			}
 		}
 	};
+
 }

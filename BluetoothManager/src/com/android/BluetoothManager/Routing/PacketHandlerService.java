@@ -61,7 +61,7 @@ public class PacketHandlerService implements Runnable{
 	 */
 	void processUIPacket(UIPacket ui_packet)
 	{
-		if((System.currentTimeMillis()-ui_packet.getTimestamp())>15)
+		if((System.currentTimeMillis()-ui_packet.getTimestamp())>60)
 		{
 			RoutingPacketReceiver.objectsFromUI.remove(ui_packet);
 			//TODO notify UI could not send
@@ -73,10 +73,9 @@ public class PacketHandlerService implements Runnable{
 			if(gotRoute!=null)
 			{
 				DataPacket data_packet= new DataPacket(ui_packet.getDeviceToSend(),ui_packet.getMsg());
-				RoutingPacketReceiver.objectsFromUI.remove(ui_packet);
-				RouteTable.bluetooth_manager.route_table.forwardMessage(ui_packet.getDeviceToSend(),
+				RouteTable.bluetooth_manager.route_table.forwardMessage(gotRoute.getNext_hop() ,
 						data_packet.toString());
-				Log.d(TAG,"Route found, sending message to "+ui_packet.getDeviceToSend());
+				Log.d(TAG,"Route found, sending message to "+gotRoute.getNext_hop());
 				RoutingPacketReceiver.objectsFromUI.remove(ui_packet);
 			}
 			else

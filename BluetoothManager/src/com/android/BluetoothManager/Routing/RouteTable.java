@@ -65,6 +65,7 @@ public class RouteTable {
 			Log.d(TAG, "Route created at " + bluetooth_manager.getSelfAddress());
 			table.add(new_r);
 			showTable();
+			
 		} else {
 			if (isPresent.getSeq_Number() < rreq.getOriginator_seqNumber()
 					|| isPresent.getHop_count() > rreq.getHop_count()) {
@@ -85,6 +86,7 @@ public class RouteTable {
 			unicastRREP(device, rrep);
 		} else {
 			rreq.setHop_count(rreq.getHop_count() + 1);
+			
 			broadcastRREQ(rreq);
 		}
 	}
