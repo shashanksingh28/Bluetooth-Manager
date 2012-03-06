@@ -44,7 +44,7 @@ public class Connection {
 
 	private ArrayList<UUID> Uuids; // List of UUID's
 
-	private ArrayList<String> BtDeviceAddresses; // List of addresses to which
+	private ArrayList<String> BtConnectedDeviceAddresses; // List of addresses to which
 													// the devices are currently
 													// connected
 
@@ -84,7 +84,7 @@ public class Connection {
 
 		BtSockets = new HashMap<String, BluetoothSocket>();
 
-		BtDeviceAddresses = new ArrayList<String>();
+		BtConnectedDeviceAddresses = new ArrayList<String>();
 
 		BtBondedDevices = new HashMap<String, String>();
 
@@ -121,10 +121,7 @@ public class Connection {
 		if (BtAdapter.isEnabled()) {
 			(new Thread(new ConnectionWaiter())).start();
 			Log.d(TAG, " ++ Server Started ++");
-			// Intent i = new Intent();
-			// i.setClass(app_context, StartDiscoverableModeActivity.class);
-			// i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			// app_context.startActivity(i);
+			server_started=true;
 			return Connection.SUCCESS;
 		}
 		return Connection.FAILURE;
@@ -179,10 +176,12 @@ public class Connection {
 				Log.i(TAG,
 						"IOException in BtStreamWatcher - probably caused by normal disconnection",
 						e);
+				Log.d(TAG,"Closing Thread since probably disconnected");
+				
 			}
 			// Getting out of the while loop means the connection is dead.
 			try {
-				BtDeviceAddresses.remove(address);
+				BtConnectedDeviceAddresses.remove(address);
 				BtSockets.remove(address);
 				BtStreamWatcherThreads.remove(address);
 
@@ -218,7 +217,7 @@ public class Connection {
 					// String name = myBSock.getRemoteDevice().getName();
 
 					BtSockets.put(address, myBSock);
-					BtDeviceAddresses.add(address);
+					BtConnectedDeviceAddresses.add(address);
 					Thread BtStreamWatcherThread = new Thread(
 							new BtStreamWatcher(address));
 					BtStreamWatcherThread.start();
@@ -236,7 +235,7 @@ public class Connection {
 	private int connect(String device) throws RemoteException {
 
 		Log.d(TAG, "Trying to connect to: " + device);
-		if (BtDeviceAddresses.contains(device)) {
+		if (BtConnectedDeviceAddresses.contains(device)) {
 			Log.d(TAG, "Already connected to: " + device);
 			return Connection.SUCCESS;
 		}
@@ -266,7 +265,7 @@ public class Connection {
 		}
 
 		BtSockets.put(device, myBSock);
-		BtDeviceAddresses.add(device);
+		BtConnectedDeviceAddresses.add(device);
 		Thread BtStreamWatcherThread = new Thread(new BtStreamWatcher(device));
 		BtStreamWatcherThread.start();
 		BtStreamWatcherThreads.put(device, BtStreamWatcherThread);
@@ -293,9 +292,9 @@ public class Connection {
 
 		appStartDiscovery();
 		connectToFoundDevices();
-		int size = BtDeviceAddresses.size();
+		int size = BtConnectedDeviceAddresses.size();
 		for (int i = 0; i < size; i++) {
-			sendMessageToDestination(BtDeviceAddresses.get(i), message);
+			sendMessageToDestination(BtConnectedDeviceAddresses.get(i), message);
 		}
 		return Connection.SUCCESS;
 	}
@@ -303,9 +302,9 @@ public class Connection {
 	public String getConnections(String srcApp) throws RemoteException {
 
 		String connections = "";
-		int size = BtDeviceAddresses.size();
+		int size = BtConnectedDeviceAddresses.size();
 		for (int i = 0; i < size; i++) {
-			connections = connections + BtDeviceAddresses.get(i) + ",";
+			connections = connections + BtConnectedDeviceAddresses.get(i) + ",";
 		}
 		return connections;
 	}
@@ -336,15 +335,15 @@ public class Connection {
 
 	public void shutdown(String srcApp) throws RemoteException {
 		try {
-			int size = BtDeviceAddresses.size();
+			int size = BtConnectedDeviceAddresses.size();
 			for (int i = 0; i < size; i++) {
-				BluetoothSocket myBsock = BtSockets.get(BtDeviceAddresses
+				BluetoothSocket myBsock = BtSockets.get(BtConnectedDeviceAddresses
 						.get(i));
 				myBsock.close();
 			}
 			BtSockets = new HashMap<String, BluetoothSocket>();
 			BtStreamWatcherThreads = new HashMap<String, Thread>();
-			BtDeviceAddresses = new ArrayList<String>();
+			BtConnectedDeviceAddresses = new ArrayList<String>();
 
 		} catch (IOException e) {
 			Log.i(TAG, "IOException in shutdown", e);

@@ -48,7 +48,14 @@ public class RouteTable {
 		
 		Log.d(TAG, "RREQ received at " + bluetooth_manager.getSelfAddress()
 				+ "\n" + rreq.toString());
-
+		
+	
+		if(rreq.getOriginator_addr().equals(bluetooth_manager.getSelfAddress()))
+		{
+			//I have created this so ignore
+			return;
+		}
+		
 		Route isPresent = getRouteToDest(rreq.getOriginator_addr());
 
 		if (isPresent == null) {
