@@ -6,8 +6,10 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 
@@ -81,10 +83,20 @@ public class UIPacketReceiver extends BroadcastReceiver {
 	}
 
 	private void processMsgData(String device, String name, String msg) {
-		setNotification("New message from: " + name, name, msg);
+		addMsgToInbox(name,msg);
+		setNotificationForMsg("New message from: " + name, name, msg);
 	}
 
-	public void setNotification(String ticker, String title, String text) {
+	private void addMsgToInbox(String name, String msg) {
+		Log.d(TAG,"Adding SMS to inbox.");
+    	ContentValues values = new ContentValues();
+        values.put("address", name);
+        values.put("body", msg);
+        bluetooth_manager.getContentResolver().insert(Uri.parse("content://sms/inbox"), values);
+        Log.d(TAG,"SMS Added to inbox.");
+	}
+
+	private void setNotificationForMsg(String ticker, String title, String text) {
 
 		int icon = R.drawable.ic_menu_dialog;
 		long when = System.currentTimeMillis();
