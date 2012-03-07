@@ -38,46 +38,42 @@ public class Connection {
 
 	private boolean server_started = false;
 
-	private BluetoothAdapter BtAdapter;
+	BluetoothAdapter BtAdapter;
 
-	private String service_name = "BluetoothManagerService"; // Random String
+	String service_name = "BluetoothManagerService"; // Random String
 																// used for
 																// starting
 																// server.
 
-	private ArrayList<UUID> Uuids; // List of UUID's
+	ArrayList<UUID> Uuids; // List of UUID's
 
-	private ArrayList<String> BtConnectedDeviceAddresses; // List of addresses
+	ArrayList<String> BtConnectedDeviceAddresses; // List of addresses
 															// to which
 	// the devices are currently
 	// connected
 
-	private HashMap<String, BluetoothSocket> BtSockets; // Mapping between
+	HashMap<String, BluetoothSocket> BtSockets; // Mapping between
 														// address and the
 														// corresponding Scoket
 
-	private HashMap<String, String> BtFoundDevices; // Mapping between the
+	HashMap<String, String> BtFoundDevices; // Mapping between the
 													// devices and the names.
 													// this list to be passed to
 													// the UI layer.contains
 													// only found devices
 
-	private HashMap<String, String> BtBondedDevices; // Mapping between the
+	HashMap<String, String> BtBondedDevices; // Mapping between the
 														// devices and the
 														// names. this list to
 														// be passed to the UI
 														// layer. contains only
 														// Bonded devices
 
-	private HashMap<String, Thread> BtStreamWatcherThreads;
-
-	Object lock;
+	HashMap<String, Thread> BtStreamWatcherThreads;
 
 	BluetoothManagerApplication bluetooth_manager;
 
 	private long lastDiscovery = 0; // Stores the time of the last discovery
-
-	private boolean isSending = false;
 
 	public Connection(BluetoothManagerApplication bluetooth_manager) {
 
@@ -86,18 +82,6 @@ public class Connection {
 		if (BtAdapter != null) {
 			BtAdapter.enable();
 		}
-
-		BtSockets = new HashMap<String, BluetoothSocket>();
-
-		BtConnectedDeviceAddresses = new ArrayList<String>();
-
-		BtBondedDevices = new HashMap<String, String>();
-
-		BtFoundDevices = new HashMap<String, String>();
-
-		BtStreamWatcherThreads = new HashMap<String, Thread>();
-
-		lock = new Object();
 
 		this.bluetooth_manager = bluetooth_manager;
 
@@ -117,8 +101,6 @@ public class Connection {
 		i.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
 		i.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
 		bluetooth_manager.registerReceiver(receiver, i);
-		
-		Log.d(TAG,"Ended at");
 
 	}
 
@@ -135,112 +117,11 @@ public class Connection {
 		return Connection.FAILURE;
 	}
 
-	private class BtStreamWatcher implements Runnable {
-		private String address;
+	
 
-		public BtStreamWatcher(String deviceAddress) {
-			address = deviceAddress;
-		}
-
-		public void run() {
-			int bufferSize = 1024;
-			byte[] buffer = new byte[bufferSize];
-			BluetoothSocket bSock = BtSockets.get(address);
-			try {
-				InputStream instream = bSock.getInputStream();
-				int bytesRead = -1;
-				String message = "";
-				while (true) {
-					message = "";
-					bytesRead = instream.read(buffer);
-					if (bytesRead != -1) {
-						while ((bytesRead == bufferSize)
-								&& (buffer[bufferSize - 1] != 0)) {
-							message = message
-									+ new String(buffer, 0, bytesRead);
-							bytesRead = instream.read(buffer);
-						}
-						message = message
-								+ new String(buffer, 0, bytesRead - 1); // Remove
-						// the
-						// stop
-						// marker
-
-						// Intent to be changed in future.
-						Log.d(TAG, "Received " + message + " from " + address
-								+ "In Connection");
-						String ACTION = bluetooth_manager.getResources()
-								.getString(R.string.RADIO_TO_ROUTING);
-						Intent i = new Intent();
-						i.setAction(ACTION);
-						i.putExtra("layer", "radio");
-						i.putExtra("device", address);
-						i.putExtra("msg", message);
-						bluetooth_manager.sendBroadcast(i);
-						Log.d(TAG, "Intent Send from Radio to routing");
-
-					}
-				}
-			} catch (IOException e) {
-				Log.i(TAG,
-						"IOException in BtStreamWatcher - probably caused by normal disconnection",
-						e);
-				Log.d(TAG, "Closing Thread since probably disconnected");
-
-			}
-			// Getting out of the while loop means the connection is dead.
-			try {
-				BtConnectedDeviceAddresses.remove(address);
-				BtSockets.remove(address);
-				BtStreamWatcherThreads.remove(address);
-
-			} catch (Exception e) {
-				Log.e(TAG, "Exception in BtStreamWatcher while disconnecting",
-						e);
-			}
-		}
-	}
-
-	/*
-	 * This class is responsible for listening for new connections. Once a
-	 * connections is accepted, a new thread is created to manage the i/p, o/p
-	 * with the newly established connection
+	/* Function that will try to establish a connection 
+	 * 
 	 */
-	private class ConnectionWaiter implements Runnable {
-
-		public ConnectionWaiter() {
-
-		}
-
-		public void run() {
-			try {
-				for (int i = 0; i < Connection.MAX_CONNECTIONS_SUPPORTED; i++) {
-					BluetoothServerSocket myServerSocket = BtAdapter
-							.listenUsingRfcommWithServiceRecord(service_name,
-									Uuids.get(i));
-					BluetoothSocket myBSock = myServerSocket.accept();
-					myServerSocket.close(); // Close the socket now that the
-					// connection has been made.
-
-					String address = myBSock.getRemoteDevice().getAddress();
-					// String name = myBSock.getRemoteDevice().getName();
-
-					BtSockets.put(address, myBSock);
-					BtConnectedDeviceAddresses.add(address);
-					Thread BtStreamWatcherThread = new Thread(
-							new BtStreamWatcher(address));
-					BtStreamWatcherThread.start();
-					BtStreamWatcherThreads.put(address, BtStreamWatcherThread);
-
-				}
-
-			} catch (IOException e) {
-				Log.i(TAG, "IOException in ConnectionService:ConnectionWaiter",
-						e);
-			}
-		}
-	}
-
 	private int connect(String device) throws RemoteException {
 
 		Log.d(TAG, "Trying to connect to: " + device);
@@ -342,24 +223,6 @@ public class Connection {
 		return Connection.FAILURE;
 	}
 
-	public void shutdown() throws RemoteException {
-		try {
-			int size = BtConnectedDeviceAddresses.size();
-			for (int i = 0; i < size; i++) {
-				BluetoothSocket myBsock = BtSockets
-						.get(BtConnectedDeviceAddresses.get(i));
-				myBsock.close();
-			}
-			BtSockets = null;// new HashMap<String, BluetoothSocket>();
-			BtStreamWatcherThreads = null;// new HashMap<String, Thread>();
-			BtConnectedDeviceAddresses = null;// new ArrayList<String>();
-			BtFoundDevices = null;// new ArrayList<String>();
-
-		} catch (IOException e) {
-			Log.i(TAG, "IOException in shutdown", e);
-		}
-	}
-
 	public String getAddress() throws RemoteException {
 		return BtAdapter.getAddress();
 	}
@@ -426,6 +289,48 @@ public class Connection {
 		i.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 3600);
 		RouteTable.bluetooth_manager.startActivity(i);
 	}
+	
+	/* Function called when Bluetooth will be turned off
+	 * Stops the thread which listens for other connections
+	 * Cleans up resources, removes the threads for GC
+	 * and make the Routing thread wait till it is started again
+	 */
+	private void stopRadio()
+	{
+		try {
+			int size = BtConnectedDeviceAddresses.size();
+			for (int i = 0; i < size; i++) {
+				BluetoothSocket myBsock = BtSockets
+						.get(BtConnectedDeviceAddresses.get(i));
+				myBsock.close();
+			}
+			BtSockets = null;// new HashMap<String, BluetoothSocket>();
+			BtStreamWatcherThreads = null;// new HashMap<String, Thread>();
+			BtConnectedDeviceAddresses = null;// new ArrayList<String>();
+			BtFoundDevices = null;// new ArrayList<String>();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	/* Function to be called when Bluetooth will be turned on
+	 * Will instantiate the threads and start the main Server thread that
+	 * listens to other connections
+	 */
+	private void startRadio()
+	{
+		BtSockets = new HashMap<String, BluetoothSocket>();
+
+		BtConnectedDeviceAddresses = new ArrayList<String>();
+
+		BtBondedDevices = new HashMap<String, String>();
+
+		BtFoundDevices = new HashMap<String, String>();
+
+		BtStreamWatcherThreads = new HashMap<String, Thread>();
+
+	}
 
 	// The BroadcastReceiver that listens for discovered devices and
 	// changes the title when discovery is finished
@@ -457,7 +362,7 @@ public class Connection {
 
 				String state = intent.getStringExtra(BtAdapter.EXTRA_STATE);
 				if (state.equals(BtAdapter.STATE_TURNING_OFF)) {
-					closeRadio();
+					stopRadio();
 				} else {
 					if (state.equals(BtAdapter.STATE_ON)) {
 						//startService();
@@ -468,17 +373,104 @@ public class Connection {
 		}
 	};
 
-	private void closeRadio()
-	{
-		try {
-			bluetooth_manager.connection.shutdown();
-			bluetooth_manager.routing_thread.wait();
-		} catch (InterruptedException e) {
-			Log.d(TAG,
-					"Wait of Routing thread interrupted !"
-							+ e.getMessage());
-		} catch (RemoteException e) {
-			Log.d(TAG, "Remote interrupt. Msg:" + e.getMessage());
+
+	/* This class is responsible for listening for new connections. Once a
+	 * connections is accepted, a new thread is created to manage the i/p, o/p
+	 * with the newly established connection
+	 */
+	private class ConnectionWaiter implements Runnable {
+
+		public void run() {
+			try {
+				for (int i = 0; i < Connection.MAX_CONNECTIONS_SUPPORTED; i++) {
+					BluetoothServerSocket myServerSocket = BtAdapter
+							.listenUsingRfcommWithServiceRecord(service_name,
+									Uuids.get(i));
+					BluetoothSocket myBSock = myServerSocket.accept();
+					myServerSocket.close(); // Close the socket now that the
+											// connection has been made.
+
+					String address = myBSock.getRemoteDevice().getAddress();
+										// String name = myBSock.getRemoteDevice().getName();
+
+					BtSockets.put(address, myBSock);
+					BtConnectedDeviceAddresses.add(address);
+					Thread BtStreamWatcherThread = new Thread(
+							new BtStreamWatcher(address));
+					BtStreamWatcherThread.start();
+					BtStreamWatcherThreads.put(address, BtStreamWatcherThread);
+
+				}
+
+			} catch (IOException e) {
+				Log.i(TAG, "IOException in ConnectionService:ConnectionWaiter",
+						e);
+			}
+		}
+	}
+	
+	/* Thread which maintains the I/O of
+	 * one stream for one device
+	 */
+	private class BtStreamWatcher implements Runnable {
+		private String address;
+
+		public BtStreamWatcher(String deviceAddress) {
+			address = deviceAddress;
+		}
+
+		public void run() {
+			int bufferSize = 1024;
+			byte[] buffer = new byte[bufferSize];
+			BluetoothSocket bSock = BtSockets.get(address);
+			try {
+				InputStream instream = bSock.getInputStream();
+				int bytesRead = -1;
+				String message = "";
+				while (true) {
+					message = "";
+					bytesRead = instream.read(buffer);
+					if (bytesRead != -1) {
+						while ((bytesRead == bufferSize)
+								&& (buffer[bufferSize - 1] != 0)) {
+							message = message
+									+ new String(buffer, 0, bytesRead);
+							bytesRead = instream.read(buffer);
+						}
+						message = message
+								+ new String(buffer, 0, bytesRead - 1); 
+
+						Log.d(TAG, "Received " + message + " from " + address
+								+ "In Connection");
+						String ACTION = bluetooth_manager.getResources()
+								.getString(R.string.RADIO_TO_ROUTING);
+						Intent i = new Intent();
+						i.setAction(ACTION);
+						i.putExtra("layer", "radio");
+						i.putExtra("device", address);
+						i.putExtra("msg", message);
+						bluetooth_manager.sendBroadcast(i);
+						Log.d(TAG, "Intent Send from Radio to routing");
+
+					}
+				}
+			} catch (IOException e) {
+				Log.i(TAG,
+						"IOException in BtStreamWatcher - probably caused by normal disconnection",
+						e);
+				Log.d(TAG, "Closing Thread since probably disconnected");
+
+			}
+			// Getting out of the while loop means the connection is dead.
+			try {
+				BtConnectedDeviceAddresses.remove(address);
+				BtSockets.remove(address);
+				BtStreamWatcherThreads.remove(address);
+
+			} catch (Exception e) {
+				Log.e(TAG, "Exception in BtStreamWatcher while disconnecting",
+						e);
+			}
 		}
 	}
 }
