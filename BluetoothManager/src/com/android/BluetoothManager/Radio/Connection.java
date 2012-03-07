@@ -22,6 +22,8 @@ import android.content.IntentFilter;
 import android.os.RemoteException;
 import android.util.Log;
 
+import com.android.BluetoothManager.Application.BluetoothManagerApplication;
+import com.android.BluetoothManager.Routing.RouteTable;
 import com.android.BluetoothManager.UI.R;
 
 public class Connection {
@@ -71,13 +73,13 @@ public class Connection {
 
 	Object lock;
 
-	Context app_context;
+	BluetoothManagerApplication bluetooth_manager;
 
 	private long lastDiscovery = 0; // Stores the time of the last discovery
 
 	private boolean isSending = false;
 
-	Connection(Context context) {
+	Connection(BluetoothManagerApplication bluetooth_manager) {
 
 		BtAdapter = BluetoothAdapter.getDefaultAdapter();
 		if (BtAdapter != null) {
@@ -96,7 +98,7 @@ public class Connection {
 
 		lock = new Object();
 
-		app_context = context;
+		this.bluetooth_manager = bluetooth_manager;
 
 		Uuids = new ArrayList<UUID>();
 		// Allow up to 7 devices to connect to the server
@@ -112,7 +114,8 @@ public class Connection {
 		IntentFilter i = new IntentFilter();
 		i.addAction(BluetoothDevice.ACTION_FOUND);
 		i.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-		app_context.registerReceiver(receiver, i);
+		i.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+		bluetooth_manager.registerReceiver(receiver, i);
 
 	}
 
@@ -163,14 +166,14 @@ public class Connection {
 						// Intent to be changed in future.
 						Log.d(TAG, "Received " + message + " from " + address
 								+ "In Connection");
-						String ACTION = app_context.getResources().getString(
-								R.string.RADIO_TO_ROUTING);
+						String ACTION = bluetooth_manager.getResources()
+								.getString(R.string.RADIO_TO_ROUTING);
 						Intent i = new Intent();
 						i.setAction(ACTION);
 						i.putExtra("layer", "radio");
 						i.putExtra("device", address);
 						i.putExtra("msg", message);
-						app_context.sendBroadcast(i);
+						bluetooth_manager.sendBroadcast(i);
 						Log.d(TAG, "Intent Send from Radio to routing");
 
 					}
@@ -336,7 +339,7 @@ public class Connection {
 		return Connection.FAILURE;
 	}
 
-	public void shutdown(String srcApp) throws RemoteException {
+	public void shutdown() throws RemoteException {
 		try {
 			int size = BtConnectedDeviceAddresses.size();
 			for (int i = 0; i < size; i++) {
@@ -344,9 +347,10 @@ public class Connection {
 						.get(BtConnectedDeviceAddresses.get(i));
 				myBsock.close();
 			}
-			BtSockets = new HashMap<String, BluetoothSocket>();
-			BtStreamWatcherThreads = new HashMap<String, Thread>();
-			BtConnectedDeviceAddresses = new ArrayList<String>();
+			BtSockets = null;// new HashMap<String, BluetoothSocket>();
+			BtStreamWatcherThreads = null;// new HashMap<String, Thread>();
+			BtConnectedDeviceAddresses = null;// new ArrayList<String>();
+			BtFoundDevices = null;// new ArrayList<String>();
 
 		} catch (IOException e) {
 			Log.i(TAG, "IOException in shutdown", e);
@@ -359,6 +363,10 @@ public class Connection {
 
 	public String getName() throws RemoteException {
 		return BtAdapter.getName();
+	}
+
+	public BluetoothAdapter getBluetoothAdapter() {
+		return BtAdapter;
 	}
 
 	/*
@@ -410,6 +418,12 @@ public class Connection {
 		}
 	}
 
+	public void makeDeviceDisocverable() {
+		Intent i = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+		i.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 3600);
+		RouteTable.bluetooth_manager.startActivity(i);
+	}
+
 	// The BroadcastReceiver that listens for discovered devices and
 	// changes the title when discovery is finished
 	private final BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -423,15 +437,42 @@ public class Connection {
 				BluetoothDevice device = intent
 						.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 				BluetoothClass bc = device.getBluetoothClass();
-				if(bc.getMajorDeviceClass() == BluetoothClass.Device.Major.PHONE){
+				if (bc.getMajorDeviceClass() == BluetoothClass.Device.Major.PHONE) {
 					BtFoundDevices.put(device.getAddress(), device.getName());
 				}
 				Log.d(TAG, "Found " + device.getAddress());
-				
+
 			} else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED
 					.equals(action)) {
 				// Do something when the search finishes.
 				Log.d(TAG, "Service Discovery Finished !");
+			} else if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
+				/*
+				 * Check if Local bluetooth adapter is on or off and make
+				 * changes accordingly.
+				 */
+
+				String state = intent.getStringExtra(BtAdapter.EXTRA_STATE);
+				if (state.equals(BtAdapter.STATE_TURNING_OFF)) {
+					bluetooth_manager.stopService(new Intent(
+							RouteTable.bluetooth_manager,
+							BluetoothManagerService.class));
+					try {
+						bluetooth_manager.connection.shutdown();
+						bluetooth_manager.routing_thread.wait();
+					} catch (InterruptedException e) {
+						Log.d(TAG,
+								"Wait of Routing thread interrupted !"
+										+ e.getMessage());
+					} catch (RemoteException e) {
+						Log.d(TAG, "Remote interrupt. Msg:" + e.getMessage());
+					}
+				} else {
+					if (state.equals(BtAdapter.STATE_ON)) {
+						//startService();
+					}
+				}
+
 			}
 		}
 	};

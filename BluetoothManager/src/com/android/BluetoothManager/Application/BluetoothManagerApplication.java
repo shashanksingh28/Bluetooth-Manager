@@ -30,7 +30,7 @@ public class BluetoothManagerApplication extends Application {
 	// Packet receiver for routing layer
 	RoutingPacketReceiver packet_receiver;
 
-	PacketHandlerService routing_thread;
+	public PacketHandlerService routing_thread;
 
 	// Packet receiver for UI layer
 	public UIPacketReceiver ui_packet_receiver;
@@ -40,9 +40,9 @@ public class BluetoothManagerApplication extends Application {
 
 	public BluetoothManagerService bluetooth_manager_service;
 
-	public Connection connection;
-
 	public RouteTable route_table;
+	
+	public Connection connection;
 
 	@Override
 	public void onCreate() {
@@ -81,10 +81,17 @@ public class BluetoothManagerApplication extends Application {
 		// initialize the route table on startup
 		route_table = new RouteTable(this);
 
-		routing_thread = new PacketHandlerService();
-		new Thread(routing_thread).start();
+		
 		Log.d(TAG, "Routing Thread Started !");
 		startService(new Intent(this, BluetoothManagerService.class));
+//		try {
+//			Thread.sleep(2000);
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//		}
+		routing_thread = new PacketHandlerService();
+		new Thread(routing_thread).start();
+		
 
 		// Testing UI via Stubs
 		Thread ui_stub = new Thread(new UIStub());

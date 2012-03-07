@@ -24,21 +24,14 @@ public class BluetoothManagerService extends Service {
 	public void onCreate() {
 		super.onCreate();
 		bluetooth_manager = (BluetoothManagerApplication) getApplication();
-		connection = new Connection(this);
-		//makeDeviceDiscoverable();
-	}
-
-	public void makeDeviceDiscoverable() {
-		Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
-        
-        startActivity(discoverableIntent);
+		connection = new Connection(bluetooth_manager);
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
 		connection = null;
+		
 	}
 
 	@Override
