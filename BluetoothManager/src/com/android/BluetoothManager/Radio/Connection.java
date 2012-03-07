@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
@@ -44,9 +45,10 @@ public class Connection {
 
 	private ArrayList<UUID> Uuids; // List of UUID's
 
-	private ArrayList<String> BtConnectedDeviceAddresses; // List of addresses to which
-													// the devices are currently
-													// connected
+	private ArrayList<String> BtConnectedDeviceAddresses; // List of addresses
+															// to which
+	// the devices are currently
+	// connected
 
 	private HashMap<String, BluetoothSocket> BtSockets; // Mapping between
 														// address and the
@@ -70,8 +72,8 @@ public class Connection {
 	Object lock;
 
 	Context app_context;
-	
-	private long lastDiscovery=0; // Stores the time of the last discovery
+
+	private long lastDiscovery = 0; // Stores the time of the last discovery
 
 	private boolean isSending = false;
 
@@ -121,7 +123,7 @@ public class Connection {
 		if (BtAdapter.isEnabled()) {
 			(new Thread(new ConnectionWaiter())).start();
 			Log.d(TAG, " ++ Server Started ++");
-			server_started=true;
+			server_started = true;
 			return Connection.SUCCESS;
 		}
 		return Connection.FAILURE;
@@ -159,7 +161,8 @@ public class Connection {
 						// marker
 
 						// Intent to be changed in future.
-						Log.d(TAG,"Received "+message+" from "+address+"In Connection");
+						Log.d(TAG, "Received " + message + " from " + address
+								+ "In Connection");
 						String ACTION = app_context.getResources().getString(
 								R.string.RADIO_TO_ROUTING);
 						Intent i = new Intent();
@@ -168,16 +171,16 @@ public class Connection {
 						i.putExtra("device", address);
 						i.putExtra("msg", message);
 						app_context.sendBroadcast(i);
-						Log.d(TAG,"Intent Send from Radio to routing");
-						
+						Log.d(TAG, "Intent Send from Radio to routing");
+
 					}
 				}
 			} catch (IOException e) {
 				Log.i(TAG,
 						"IOException in BtStreamWatcher - probably caused by normal disconnection",
 						e);
-				Log.d(TAG,"Closing Thread since probably disconnected");
-				
+				Log.d(TAG, "Closing Thread since probably disconnected");
+
 			}
 			// Getting out of the while loop means the connection is dead.
 			try {
@@ -337,8 +340,8 @@ public class Connection {
 		try {
 			int size = BtConnectedDeviceAddresses.size();
 			for (int i = 0; i < size; i++) {
-				BluetoothSocket myBsock = BtSockets.get(BtConnectedDeviceAddresses
-						.get(i));
+				BluetoothSocket myBsock = BtSockets
+						.get(BtConnectedDeviceAddresses.get(i));
 				myBsock.close();
 			}
 			BtSockets = new HashMap<String, BluetoothSocket>();
@@ -393,12 +396,12 @@ public class Connection {
 	 * Discover devices only if the last discovery was made a minute ago.
 	 */
 	public void appStartDiscovery() {
-		if(BtAdapter.isDiscovering()){
+		if (BtAdapter.isDiscovering()) {
 			return;
 		}
-		if(System.currentTimeMillis()/1000 - lastDiscovery > 60){
+		if (System.currentTimeMillis() / 1000 - lastDiscovery > 60) {
 			BtAdapter.startDiscovery();
-			lastDiscovery = System.currentTimeMillis()/1000;
+			lastDiscovery = System.currentTimeMillis() / 1000;
 			try {
 				Thread.sleep(12000);
 			} catch (InterruptedException e) {
@@ -419,14 +422,16 @@ public class Connection {
 				// Get the BluetoothDevice object from the Intent
 				BluetoothDevice device = intent
 						.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-				// If it's already paired, skip it, because it's been listed
-				// already
-				BtFoundDevices.put(device.getAddress(), device.getName());
+				BluetoothClass bc = device.getBluetoothClass();
+				if(bc.getMajorDeviceClass() == BluetoothClass.Device.Major.PHONE){
+					BtFoundDevices.put(device.getAddress(), device.getName());
+				}
 				Log.d(TAG, "Found " + device.getAddress());
-				// When discovery is finished, change the Activity title
+				
 			} else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED
 					.equals(action)) {
-				Log.d(TAG,"Service Discovery Finished !");
+				// Do something when the search finishes.
+				Log.d(TAG, "Service Discovery Finished !");
 			}
 		}
 	};
