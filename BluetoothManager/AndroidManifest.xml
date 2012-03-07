@@ -33,8 +33,6 @@
         <activity android:name="com.android.BluetoothManager.UI.DeviceListActivity" >
         </activity>
 
-        <service android:name="com.android.BluetoothManager.Radio.BluetoothManagerService" >
-        </service>
     </application>
 
 </manifest>

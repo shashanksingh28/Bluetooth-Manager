@@ -79,8 +79,9 @@ public class Connection {
 
 	private boolean isSending = false;
 
-	Connection(BluetoothManagerApplication bluetooth_manager) {
+	public Connection(BluetoothManagerApplication bluetooth_manager) {
 
+		Log.d(TAG,"Started at");
 		BtAdapter = BluetoothAdapter.getDefaultAdapter();
 		if (BtAdapter != null) {
 			BtAdapter.enable();
@@ -116,6 +117,8 @@ public class Connection {
 		i.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
 		i.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
 		bluetooth_manager.registerReceiver(receiver, i);
+		
+		Log.d(TAG,"Ended at");
 
 	}
 
@@ -454,19 +457,7 @@ public class Connection {
 
 				String state = intent.getStringExtra(BtAdapter.EXTRA_STATE);
 				if (state.equals(BtAdapter.STATE_TURNING_OFF)) {
-					bluetooth_manager.stopService(new Intent(
-							RouteTable.bluetooth_manager,
-							BluetoothManagerService.class));
-					try {
-						bluetooth_manager.connection.shutdown();
-						bluetooth_manager.routing_thread.wait();
-					} catch (InterruptedException e) {
-						Log.d(TAG,
-								"Wait of Routing thread interrupted !"
-										+ e.getMessage());
-					} catch (RemoteException e) {
-						Log.d(TAG, "Remote interrupt. Msg:" + e.getMessage());
-					}
+					closeRadio();
 				} else {
 					if (state.equals(BtAdapter.STATE_ON)) {
 						//startService();
@@ -477,4 +468,17 @@ public class Connection {
 		}
 	};
 
+	private void closeRadio()
+	{
+		try {
+			bluetooth_manager.connection.shutdown();
+			bluetooth_manager.routing_thread.wait();
+		} catch (InterruptedException e) {
+			Log.d(TAG,
+					"Wait of Routing thread interrupted !"
+							+ e.getMessage());
+		} catch (RemoteException e) {
+			Log.d(TAG, "Remote interrupt. Msg:" + e.getMessage());
+		}
+	}
 }

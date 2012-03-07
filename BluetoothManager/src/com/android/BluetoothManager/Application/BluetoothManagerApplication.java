@@ -7,14 +7,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.RemoteException;
 import android.util.Log;
-import android.widget.ArrayAdapter;
 
-import com.android.BluetoothManager.Radio.BluetoothManagerService;
 import com.android.BluetoothManager.Radio.Connection;
 import com.android.BluetoothManager.Radio.RadioPacketReceiver;
 import com.android.BluetoothManager.Routing.PacketHandlerService;
-import com.android.BluetoothManager.Routing.RoutingPacketReceiver;
 import com.android.BluetoothManager.Routing.RouteTable;
+import com.android.BluetoothManager.Routing.RoutingPacketReceiver;
 import com.android.BluetoothManager.UI.R;
 import com.android.BluetoothManager.UI.UIPacketReceiver;
 
@@ -38,8 +36,6 @@ public class BluetoothManagerApplication extends Application {
 	// Packet receiver for radio layer
 	RadioPacketReceiver radio_packet_receiver;
 
-	public BluetoothManagerService bluetooth_manager_service;
-
 	public RouteTable route_table;
 	
 	public Connection connection;
@@ -48,6 +44,10 @@ public class BluetoothManagerApplication extends Application {
 	public void onCreate() {
 		super.onCreate();
 
+		//Log.d(TAG,"Starting Service");
+		//startService(new Intent(this, BluetoothManagerService.class));
+		connection=new Connection(this);
+		connection.startServer();
 		// getting the intent strings from the XML file.
 		Log.d(TAG, "Application OnCreate");
 		String UI_TO_ROUTING = getResources().getString(R.string.UI_TO_ROUTING);
@@ -72,6 +72,7 @@ public class BluetoothManagerApplication extends Application {
 		i.addAction(ROUTING_TO_UI);
 		registerReceiver(ui_packet_receiver, i);
 
+		
 		// Instantiate the Radio layer receiver and register it.
 		radio_packet_receiver = new RadioPacketReceiver(this);
 		IntentFilter p = new IntentFilter();
@@ -83,12 +84,13 @@ public class BluetoothManagerApplication extends Application {
 
 		
 		Log.d(TAG, "Routing Thread Started !");
-		startService(new Intent(this, BluetoothManagerService.class));
+		
 //		try {
 //			Thread.sleep(2000);
 //		} catch (InterruptedException e) {
 //			e.printStackTrace();
 //		}
+		Log.d(TAG,"Starting Routing thread ");
 		routing_thread = new PacketHandlerService();
 		new Thread(routing_thread).start();
 		
@@ -102,7 +104,7 @@ public class BluetoothManagerApplication extends Application {
 	@Override
 	public void onTerminate() {
 		super.onTerminate();
-		stopService(new Intent(this, BluetoothManagerService.class));
+		
 	}
 
 	public String getSelfAddress() {

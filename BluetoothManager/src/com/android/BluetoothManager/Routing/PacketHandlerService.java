@@ -3,11 +3,8 @@ package com.android.BluetoothManager.Routing;
 import java.util.Iterator;
 
 import android.bluetooth.BluetoothAdapter;
-import android.content.Intent;
 import android.util.Log;
 
-import com.android.BluetoothManager.Radio.BluetoothManagerService;
-import com.android.BluetoothManager.Radio.RadioPacketReceiver;
 import com.android.BluetoothManager.Routing.Packet_types.DataPacket;
 import com.android.BluetoothManager.Routing.Packet_types.RadioPacket;
 import com.android.BluetoothManager.Routing.Packet_types.Route_Message;
@@ -40,7 +37,7 @@ public class PacketHandlerService extends Thread {
 		try {
 		
 			
-			Log.d(TAG, "Scan Mode:"+RouteTable.bluetooth_manager.connection.toString());
+			Log.d(TAG, "ConnectionObject :"+RouteTable.bluetooth_manager.connection.toString());
 			while (true) {
 				Log.d(TAG, "Looping through the iterators");
 				RoutingPacketReceiver.printQueues();
