@@ -37,7 +37,7 @@ public class PacketHandlerService extends Thread {
 		try {
 		
 			
-			Log.d(TAG, "ConnectionObject :"+RouteTable.bluetooth_manager.connection.toString());
+			//Log.d(TAG, "ConnectionObject :"+RouteTable.bluetooth_manager.connection.toString());
 			while (true) {
 				Log.d(TAG, "Looping through the iterators");
 				RoutingPacketReceiver.printQueues();

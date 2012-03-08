@@ -285,9 +285,12 @@ public class Connection {
 	}
 
 	public void makeDeviceDisocverable() {
+		Log.d(TAG,"Making Device Discoverable.");
 		Intent i = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
 		i.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 3600);
-		RouteTable.bluetooth_manager.startActivity(i);
+		i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		bluetooth_manager.startActivity(i);
+		Log.d(TAG,"Made Device Discoverable");
 	}
 	
 	/* Function called when Bluetooth will be turned off
