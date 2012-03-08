@@ -41,33 +41,38 @@ public class Connection {
 	BluetoothAdapter BtAdapter;
 
 	String service_name = "BluetoothManagerService"; // Random String
-																// used for
-																// starting
-																// server.
+														// used for
+														// starting
+														// server.
+
+	String friend_service_name = "Friend_Service"; // Random String
 
 	ArrayList<UUID> Uuids; // List of UUID's
 
+	UUID friend_uuid; // UUID to check if this application is running on other
+						// phone or not.
+
 	ArrayList<String> BtConnectedDeviceAddresses; // List of addresses
-															// to which
+													// to which
 	// the devices are currently
 	// connected
 
 	HashMap<String, BluetoothSocket> BtSockets; // Mapping between
-														// address and the
-														// corresponding Scoket
+												// address and the
+												// corresponding Scoket
 
 	HashMap<String, String> BtFoundDevices; // Mapping between the
-													// devices and the names.
-													// this list to be passed to
-													// the UI layer.contains
-													// only found devices
+											// devices and the names.
+											// this list to be passed to
+											// the UI layer.contains
+											// only found devices
 
 	HashMap<String, String> BtBondedDevices; // Mapping between the
-														// devices and the
-														// names. this list to
-														// be passed to the UI
-														// layer. contains only
-														// Bonded devices
+												// devices and the
+												// names. this list to
+												// be passed to the UI
+												// layer. contains only
+												// Bonded devices
 
 	HashMap<String, Thread> BtStreamWatcherThreads;
 
@@ -77,7 +82,7 @@ public class Connection {
 
 	public Connection(BluetoothManagerApplication bluetooth_manager) {
 
-		Log.d(TAG,"Started at");
+		Log.d(TAG, "Started at");
 		BtAdapter = BluetoothAdapter.getDefaultAdapter();
 		if (BtAdapter != null) {
 			BtAdapter.enable();
@@ -95,6 +100,8 @@ public class Connection {
 		Uuids.add(UUID.fromString("503c7434-bc23-11de-8a39-0800200c9a66"));
 		Uuids.add(UUID.fromString("503c7435-bc23-11de-8a39-0800200c9a66"));
 
+		friend_uuid = UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a66");
+
 		// Registration for Bluetooth Events.
 		IntentFilter i = new IntentFilter();
 		i.addAction(BluetoothDevice.ACTION_FOUND);
@@ -102,9 +109,11 @@ public class Connection {
 		i.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
 		bluetooth_manager.registerReceiver(receiver, i);
 
+		startRadio();
 	}
 
 	public int startServer() {
+
 		if (server_started) {
 			return Connection.FAILURE;
 		}
@@ -117,10 +126,8 @@ public class Connection {
 		return Connection.FAILURE;
 	}
 
-	
-
-	/* Function that will try to establish a connection 
-	 * 
+	/*
+	 * Function that will try to establish a connection
 	 */
 	private int connect(String device) throws RemoteException {
 
@@ -259,7 +266,11 @@ public class Connection {
 			Map.Entry<String, String> device = (Map.Entry<String, String>) devices
 					.next();
 			try {
-				connect(device.getKey());
+				if (isMyFriend(device.getKey())) {
+					connect(device.getKey());
+				} else {
+					Log.d(TAG, device.getKey() + " is not my friend.");
+				}
 			} catch (RemoteException e) {
 				Log.d(TAG, "Couldn't connect to " + device.getKey());
 			}
@@ -285,21 +296,69 @@ public class Connection {
 	}
 
 	public void makeDeviceDisocverable() {
-		Log.d(TAG,"Making Device Discoverable.");
+		Log.d(TAG, "Making Device Discoverable.");
 		Intent i = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
 		i.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 3600);
 		i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		bluetooth_manager.startActivity(i);
-		Log.d(TAG,"Made Device Discoverable");
+		Log.d(TAG, "Made Device Discoverable");
 	}
-	
-	/* Function called when Bluetooth will be turned off
-	 * Stops the thread which listens for other connections
-	 * Cleans up resources, removes the threads for GC
-	 * and make the Routing thread wait till it is started again
+
+	public boolean isMyFriend(String address) {
+
+		boolean is_my_friend = false;
+
+		Log.d(TAG, "Checking if " + address + " is my friend");
+
+		BluetoothDevice myBtServer = BtAdapter.getRemoteDevice(address);
+
+		BluetoothSocket myBSock = null;
+
+		/*
+		 * Try this for three times since there might be other nodes which are
+		 * trying to connect to the same device.
+		 */
+		for (int i = 0; i < 2; i++) {
+
+			Log.d(TAG, " Trying to create Socket to see if " + address
+					+ "is my friend");
+			myBSock = getConnectedSocket(myBtServer, friend_uuid);
+			Log.d(TAG, "After getConnectedSocket(): " + myBSock);
+			if (myBSock == null) {
+				try {
+					Thread.sleep(25);
+				} catch (InterruptedException e) {
+					Log.e(TAG, "InterruptedException in connect", e);
+				}
+			} else {
+				is_my_friend = true;
+				try {
+					myBSock.close();
+				} catch (IOException e) {
+					Log.d(TAG,
+							"Error while closing friend socket. "
+									+ e.getMessage());
+				}
+				break;
+			}
+		}
+		return is_my_friend;
+	}
+
+	/*
+	 * Start the server which listens for connections used to determine if the
+	 * other node has our application running or not.
 	 */
-	private void stopRadio()
-	{
+	public void startFriendServer() {
+		(new Thread(new FriendServer())).start();
+	}
+
+	/*
+	 * Function called when Bluetooth will be turned off Stops the thread which
+	 * listens for other connections Cleans up resources, removes the threads
+	 * for GC and make the Routing thread wait till it is started again
+	 */
+	private void stopRadio() {
 		try {
 			int size = BtConnectedDeviceAddresses.size();
 			for (int i = 0; i < size; i++) {
@@ -312,17 +371,16 @@ public class Connection {
 			BtConnectedDeviceAddresses = null;// new ArrayList<String>();
 			BtFoundDevices = null;// new ArrayList<String>();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.d(TAG,"Error in stopRadio(). "+e.getMessage());
 		}
 	}
-	
-	/* Function to be called when Bluetooth will be turned on
-	 * Will instantiate the threads and start the main Server thread that
-	 * listens to other connections
+
+	/*
+	 * Function to be called when Bluetooth will be turned on Will instantiate
+	 * the threads and start the main Server thread that listens to other
+	 * connections
 	 */
-	private void startRadio()
-	{
+	private void startRadio() {
 		BtSockets = new HashMap<String, BluetoothSocket>();
 
 		BtConnectedDeviceAddresses = new ArrayList<String>();
@@ -333,6 +391,56 @@ public class Connection {
 
 		BtStreamWatcherThreads = new HashMap<String, Thread>();
 
+	}
+
+	private void communicateFromRadioToRouting(String address, String message) {
+		String ACTION = bluetooth_manager.getResources().getString(
+				R.string.RADIO_TO_ROUTING);
+		Intent i = new Intent();
+		i.setAction(ACTION);
+		i.putExtra("layer", "radio");
+		i.putExtra("device", address);
+		i.putExtra("msg", message);
+		bluetooth_manager.sendBroadcast(i);
+		Log.d(TAG, "Intent Send from Radio to routing");
+	}
+
+	/*
+	 * FriendServer that listens for friendly connections. This mechanism is
+	 * just used to check if the node is running our application.
+	 */
+	private class FriendServer implements Runnable {
+
+		@Override
+		public void run() {
+			BluetoothServerSocket myServerSocket;
+			while (true) {
+				try {
+					// Start listening with friend_uuid
+					Log.d(TAG, "Starting FriendServer");
+					myServerSocket = BtAdapter
+							.listenUsingRfcommWithServiceRecord(
+									friend_service_name, friend_uuid);
+					Log.d(TAG, "FriendServer Started..");
+					BluetoothSocket myBSock = myServerSocket.accept();
+					myServerSocket.close(); // Close the socket now that the
+											// connection has been made.
+					if (myBSock != null) {
+						Log.d(TAG, "Found a Friend:"
+								+ myBSock.getRemoteDevice().getName() + " "
+								+ myBSock.getRemoteDevice().getAddress());
+						myBSock.close(); // Close this socket too since we now
+											// know
+											// that the node is running our
+											// application
+					}
+
+				} catch (IOException e) {
+					Log.d(TAG, "Error in FriendServer: " + e.getMessage());
+				}
+			}
+
+		}
 	}
 
 	// The BroadcastReceiver that listens for discovered devices and
@@ -368,7 +476,7 @@ public class Connection {
 					stopRadio();
 				} else {
 					if (state.equals(BtAdapter.STATE_ON)) {
-						//startService();
+						startRadio();
 					}
 				}
 
@@ -376,8 +484,8 @@ public class Connection {
 		}
 	};
 
-
-	/* This class is responsible for listening for new connections. Once a
+	/*
+	 * This class is responsible for listening for new connections. Once a
 	 * connections is accepted, a new thread is created to manage the i/p, o/p
 	 * with the newly established connection
 	 */
@@ -394,7 +502,7 @@ public class Connection {
 											// connection has been made.
 
 					String address = myBSock.getRemoteDevice().getAddress();
-										// String name = myBSock.getRemoteDevice().getName();
+					// String name = myBSock.getRemoteDevice().getName();
 
 					BtSockets.put(address, myBSock);
 					BtConnectedDeviceAddresses.add(address);
@@ -411,9 +519,9 @@ public class Connection {
 			}
 		}
 	}
-	
-	/* Thread which maintains the I/O of
-	 * one stream for one device
+
+	/*
+	 * Thread which maintains the I/O of one stream for one device
 	 */
 	private class BtStreamWatcher implements Runnable {
 		private String address;
@@ -441,20 +549,11 @@ public class Connection {
 							bytesRead = instream.read(buffer);
 						}
 						message = message
-								+ new String(buffer, 0, bytesRead - 1); 
+								+ new String(buffer, 0, bytesRead - 1);
 
 						Log.d(TAG, "Received " + message + " from " + address
 								+ "In Connection");
-						String ACTION = bluetooth_manager.getResources()
-								.getString(R.string.RADIO_TO_ROUTING);
-						Intent i = new Intent();
-						i.setAction(ACTION);
-						i.putExtra("layer", "radio");
-						i.putExtra("device", address);
-						i.putExtra("msg", message);
-						bluetooth_manager.sendBroadcast(i);
-						Log.d(TAG, "Intent Send from Radio to routing");
-
+						communicateFromRadioToRouting(address, message);
 					}
 				}
 			} catch (IOException e) {
@@ -476,4 +575,5 @@ public class Connection {
 			}
 		}
 	}
+
 }
